@@ -1,22 +1,20 @@
 #!/usr/bin/env python3
 """
-TikTok Ads System - 宝塔部署脚本
+TikTok Ads System - 部署脚本（基于 Git）
 
 用法:
-  python deploy.py init      # 首次初始化（创建目录/数据库/Nginx/.env + 部署全量）
-  python deploy.py            # 全量更新（后端+前端）
-  python deploy.py backend    # 仅后端
-  python deploy.py frontend   # 仅前端
+  python deploy.py init      # 首次初始化（创建目录/数据库/Nginx/.env + git clone）
+  python deploy.py            # 全量更新（git pull + 安装依赖 + 重启 + 构建前端上传）
+  python deploy.py backend    # 仅后端（git pull + 安装依赖 + 重启）
+  python deploy.py frontend   # 仅前端（本地构建 + 上传 dist）
   python deploy.py restart    # 重启服务
   python deploy.py logs       # 查看日志
   python deploy.py status     # 检查状态
   python deploy.py nginx      # 更新 Nginx 配置
 
-前提:
-  在宝塔面板中完成:
-  1. Python项目管理器 → 安装 Python 3.11
-  2. 用 Python项目管理器创建项目（或脚本自动用 supervisor 管理）
-  3. SSL 证书申请
+配置:
+  敏感信息存放在 deploy/.env.deploy（不提交到 git）
+  模板见 deploy/.env.deploy.example
 """
 import os
 import sys
@@ -473,16 +471,29 @@ server {{
         log(f"  ⚠ Nginx test failed: {error.strip()}")
 
 
+def git_pull(d: Deployer):
+    """从 GitHub 拉取最新代码"""
+    log("Pulling latest code from GitHub...")
+    out, err_out, code = d.run(f"""
+cd {REMOTE_DIR}
+git fetch origin main 2>&1
+git reset --hard origin/main 2>&1
+git log --oneline -1
+""", check=False, timeout=60)
+    print(f"  {out.strip()}")
+    if code != 0:
+        print(f"  stderr: {err_out}")
+
+
 def deploy_backend(d: Deployer):
-    """部署后端代码"""
+    """部署后端代码（git pull + 安装依赖 + 重启）"""
     log("Deploying backend...")
 
-    count = d.upload_dir(LOCAL_BACKEND, f"{REMOTE_DIR}/backend", excludes=BACKEND_EXCLUDES)
-    log(f"  Uploaded {count} files")
+    git_pull(d)
 
     log("Installing dependencies...")
     out, err_out, code = d.run(f"""
-cd {REMOTE_DIR}/backend
+cd {REMOTE_DIR}/tiktok-ads-system
 source venv/bin/activate
 pip install -r requirements.txt -q 2>&1 | tail -5
 echo "OK"
@@ -492,13 +503,7 @@ echo "OK"
         print(f"  stderr: {err_out}")
 
     log("Restarting backend...")
-    # 尝试 supervisor，fallback 到 systemd
-    d.run(f"""
-if command -v supervisorctl &>/dev/null; then
-    supervisorctl restart tiktok-ads 2>/dev/null && echo "supervisor restarted" || true
-fi
-systemctl restart tiktok-ads 2>/dev/null || true
-""", check=False)
+    d.run("systemctl restart tiktok-ads 2>/dev/null || true", check=False)
     time.sleep(3)
 
     # 验证
@@ -531,10 +536,10 @@ def build_frontend():
 
 
 def deploy_frontend(d: Deployer):
-    """构建并部署前端"""
+    """构建前端并上传到服务器"""
     build_frontend()
 
-    log("Uploading frontend...")
+    log("Uploading frontend dist...")
     # 先清空旧文件
     d.run(f"rm -rf {REMOTE_DIR}/frontend/*", check=False)
     count = d.upload_dir(FRONTEND_DIST, f"{REMOTE_DIR}/frontend")
