@@ -196,7 +196,7 @@ async def oauth_callback(
         logger.info(f"[OAuth] Redirecting to success page: /auth/success?count={len(saved)}")
         
         return RedirectResponse(
-            url=f"https://ih108di320891.vicp.fun/auth/success?count={len(saved)}&advertisers={advertisers_json}",
+            url=f"{settings.TIKTOK_REDIRECT_URI.rsplit('/auth/callback', 1)[0]}/auth/success?count={len(saved)}&advertisers={advertisers_json}",
             status_code=302
         )
 
@@ -206,14 +206,14 @@ async def oauth_callback(
         logger.error(f"[OAuth] Redirecting to error page with message: {error_msg}")
         # 重定向到前端错误页面
         return RedirectResponse(
-            url=f"https://ih108di320891.vicp.fun/auth/error?message={quote(error_msg)}",
+            url=f"{settings.TIKTOK_REDIRECT_URI.rsplit('/auth/callback', 1)[0]}/auth/error?message={quote(error_msg)}",
             status_code=302
         )
     except HTTPException as e:
         logger.error(f"[OAuth] ❌ HTTP Error: status={e.status_code}, detail={e.detail}")
         logger.error(f"[OAuth] Redirecting to error page with message: {e.detail}")
         return RedirectResponse(
-            url=f"https://ih108di320891.vicp.fun/auth/error?message={quote(str(e.detail))}",
+            url=f"{settings.TIKTOK_REDIRECT_URI.rsplit('/auth/callback', 1)[0]}/auth/error?message={quote(str(e.detail))}",
             status_code=302
         )
     except Exception as e:
@@ -222,7 +222,7 @@ async def oauth_callback(
         error_msg = f"{type(e).__name__}: {str(e)}"
         logger.error(f"[OAuth] Redirecting to error page with message: {error_msg}")
         return RedirectResponse(
-            url=f"https://ih108di320891.vicp.fun/auth/error?message={quote(error_msg)}",
+            url=f"{settings.TIKTOK_REDIRECT_URI.rsplit('/auth/callback', 1)[0]}/auth/error?message={quote(error_msg)}",
             status_code=302
         )
 
