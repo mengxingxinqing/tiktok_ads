@@ -1,0 +1,38 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+venv/
+.venv/
+*.egg-info/
+
+# Environment
+.env
+.env.*
+!.env.example
+!.env.deploy.example
+
+# Logs
+logs/
+*.log
+
+# Node
+node_modules/
+tiktok-ads-frontend-dist/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Deploy secrets (already in deploy.py, but just in case)
+deploy/deploy.py.bak
+
+# Misc
+.pytest_cache/
+.mypy_cache/

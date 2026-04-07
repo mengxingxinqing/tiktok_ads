@@ -1,0 +1,396 @@
+# TikTok Business API - Document Index
+
+- [Migrate Campaign Management APIs](#1749537346290689) — Overview/V1.3 updates/Migrate to v1.3/Migrate Campaign Management APIs
+- [Campaign creation](#1758526151905281) — Use Cases/Campaign creation
+- [Create Traffic ads](#1782086026530817) — Use Cases/Campaign creation/Create Traffic ads
+- [Optimize Destination Visit in Traffic ads](#1782086241778690) — Use Cases/Campaign creation/Create Traffic ads/Optimize Destination Visit in Traffic ads
+- [Create Website Conversions ads](#1775548501843970) — Use Cases/Campaign creation/Create Website Conversions ads
+- [Create Shopping Ads](#1741942179356738) — Use Cases/Campaign creation/Create Shopping Ads
+- [Migrate to GMV Max Campaigns](#1837161048383489) — Use Cases/Campaign creation/Create Shopping Ads/Migrate to GMV Max Campaigns
+- [Create Video Shopping Ads](#1741942291730434) — Use Cases/Campaign creation/Create Shopping Ads/Create Video Shopping Ads
+- [Create Catalog Ads](#1750361698613249) — Use Cases/Campaign creation/Create Shopping Ads/Create Video Shopping Ads/Create Catalog Ads
+- [Configure destination and deeplink settings for website-promoting Video Shopping Ads](#1774519076905985) — Use Cases/Campaign creation/Create Shopping Ads/Create Video Shopping Ads/Create Catalog Ads/Configure destination and deeplink settings for website-promoting Video Shopping Ads
+- [Optimize Destination visit in Video Shopping Ads](#1782087855154177) — Use Cases/Campaign creation/Create Shopping Ads/Create Video Shopping Ads/Create Catalog Ads/Optimize Destination visit in Video Shopping Ads
+- [Create Live Shopping Ads](#1754162402455554) — Use Cases/Campaign creation/Create Shopping Ads/Create Live Shopping Ads
+- [Migrate to Video Shopping Ads](#1754726939130882) — Use Cases/Campaign creation/Create Shopping Ads/Migrate to Video Shopping Ads
+- [Create GMV Max Campaigns](#1822009058467842) — Use Cases/Campaign creation/Create GMV Max Campaigns
+- [Create Product GMV Max Campaigns](#1822009220448257) — Use Cases/Campaign creation/Create GMV Max Campaigns/Create Product GMV Max Campaigns
+- [Create LIVE GMV Max Campaigns](#1822009242546258) — Use Cases/Campaign creation/Create GMV Max Campaigns/Create LIVE GMV Max Campaigns
+- [Create an Upgraded Smart+ Campaign](#1843309449749698) — Use Cases/Campaign creation/Create an Upgraded Smart+ Campaign
+- [Create Upgraded Smart+ App Campaigns](#1843309500205058) — Use Cases/Campaign creation/Create an Upgraded Smart+ Campaign/Create Upgraded Smart+ App Campaigns
+- [Create an Upgraded Smart+ non-DC App Campaign](#1853377390815233) — Use Cases/Campaign creation/Create an Upgraded Smart+ Campaign/Create Upgraded Smart+ App Campaigns/Create an Upgraded Smart+ non-DC App Campaign
+- [Create an Upgraded Smart+ DC App Campaign](#1853377803841537) — Use Cases/Campaign creation/Create an Upgraded Smart+ Campaign/Create Upgraded Smart+ App Campaigns/Create an Upgraded Smart+ DC App Campaign
+- [Create an Upgraded Smart+ Minis Campaign](#1853377811982657) — Use Cases/Campaign creation/Create an Upgraded Smart+ Campaign/Create Upgraded Smart+ App Campaigns/Create an Upgraded Smart+ Minis Campaign
+- [Create Upgraded Smart+ Web Campaigns](#1843309514567809) — Use Cases/Campaign creation/Create an Upgraded Smart+ Campaign/Create Upgraded Smart+ Web Campaigns
+- [Create a regular Upgraded Smart+ Web Campaign](#1847302878676994) — Use Cases/Campaign creation/Create an Upgraded Smart+ Campaign/Create Upgraded Smart+ Web Campaigns/Create a regular Upgraded Smart+ Web Campaign
+- [Create Upgraded Smart+ E-commerce Catalog Ads](#1847302895272962) — Use Cases/Campaign creation/Create an Upgraded Smart+ Campaign/Create Upgraded Smart+ Web Campaigns/Create Upgraded Smart+ E-commerce Catalog Ads
+- [Create Upgraded Smart+ Travel Ads](#1847302908327938) — Use Cases/Campaign creation/Create an Upgraded Smart+ Campaign/Create Upgraded Smart+ Web Campaigns/Create Upgraded Smart+ Travel Ads
+- [Create Upgraded Smart+ Streaming Ads](#1847302920924306) — Use Cases/Campaign creation/Create an Upgraded Smart+ Campaign/Create Upgraded Smart+ Web Campaigns/Create Upgraded Smart+ Streaming Ads
+- [Create Upgraded Smart+ Mini Series Catalog Ads](#1847302935967746) — Use Cases/Campaign creation/Create an Upgraded Smart+ Campaign/Create Upgraded Smart+ Web Campaigns/Create Upgraded Smart+ Mini Series Catalog Ads
+- [Create Upgraded Smart+ Catalog Ads for App](#1847303035303106) — Use Cases/Campaign creation/Create an Upgraded Smart+ Campaign/Create Upgraded Smart+ Catalog Ads for App
+- [Create Upgraded Smart+ Ads with Website and App Optimization](#1854746404386113) — Use Cases/Campaign creation/Create an Upgraded Smart+ Campaign/Create Upgraded Smart+ Ads with Website and App Optimization
+- [Create Upgraded Smart+ Catalog Ads with Website and App Optimization](#1855007137120578) — Use Cases/Campaign creation/Create an Upgraded Smart+ Campaign/Create Upgraded Smart+ Ads with Website and App Optimization/Create Upgraded Smart+ Catalog Ads with Website and App Optimization
+- [Create Upgraded Smart+ Non-Catalog Ads with Website and App Optimization](#1855007163018689) — Use Cases/Campaign creation/Create an Upgraded Smart+ Campaign/Create Upgraded Smart+ Ads with Website and App Optimization/Create Upgraded Smart+ Non-Catalog Ads with Website and App Optimization
+- [Create Search Ads](#1780164603696130) — Use Cases/Campaign creation/Create Search Ads
+- [Create Search Ads Campaigns](#1815394136739841) — Use Cases/Campaign creation/Create Search Ads Campaigns
+- [Create ads with Website and App Optimization](#1839876593708034) — Use Cases/Campaign creation/Create ads with Website and App Optimization
+- [Create Manual Catalog Ads with Website and App Optimization](#1839882947475458) — Use Cases/Campaign creation/Create ads with Website and App Optimization/Create Manual Catalog Ads with Website and App Optimization
+- [Create Manual Non-Catalog Ads with Website and App Optimization](#1839882969587906) — Use Cases/Campaign creation/Create ads with Website and App Optimization/Create Manual Non-Catalog Ads with Website and App Optimization
+- [Create Smart+ Catalog Ads with Website and App Optimization](#1842232769643905) — Use Cases/Campaign creation/Create ads with Website and App Optimization/Create Smart+ Catalog Ads with Website and App Optimization
+- [Create single image ads](#1777633230937090) — Use Cases/Campaign creation/Create single image ads
+- [Create Carousel Ads](#1766217791987713) — Use Cases/Campaign creation/Create Carousel Ads
+- [Create Spark Ads](#1739470744631298) — Use Cases/Campaign creation/Create Spark Ads
+- [Migrate to Spark Ads](#1848048566169730) — Use Cases/Campaign creation/Create Spark Ads/Migrate to Spark Ads
+- [Create Advanced Dedicated Campaigns](#1797011827608577) — Use Cases/Campaign creation/Create Advanced Dedicated Campaigns
+- [Reporting](#1758528841973762) — Use Cases/Reporting
+- [Reporting](#1775798662604802) — Marketing API/Business Center/Guides/Reporting
+- [Creatives](#1736271785207810) — Marketing API/Creatives
+- [Overview](#1748896830086145) — Marketing API/Creatives/Overview
+- [Guides](#1748896852671489) — Marketing API/Creatives/Guides
+- [Creative assets](#1739361739523073) — Marketing API/Creatives/Guides/Creative assets
+- [Instant pages](#1739953260466178) — Marketing API/Creatives/Guides/Creative assets/Instant pages
+- [Call-to-action texts](#1749018853745665) — Marketing API/Creatives/Guides/Creative assets/Call-to-action texts
+- [Interactive Add-ons](#1749019605861377) — Marketing API/Creatives/Guides/Creative assets/Interactive Add-ons
+- [Cards](#1749019652141058) — Marketing API/Creatives/Guides/Creative assets/Interactive Add-ons/Cards
+- [Stickers](#1749019667506177) — Marketing API/Creatives/Guides/Creative assets/Interactive Add-ons/Stickers
+- [Premium Add-ons](#1749019676181505) — Marketing API/Creatives/Guides/Creative assets/Interactive Add-ons/Premium Add-ons
+- [Include disclaimers in ads](#1739953274550273) — Marketing API/Creatives/Guides/Creative assets/Include disclaimers in ads
+- [Creative tools](#1740286998081538) — Marketing API/Creatives/Guides/Creative tools
+- [Ads preview](#1740317791125506) — Marketing API/Creatives/Guides/Creative tools/Ads preview
+- [CTA recommendations](#1740307296329730) — Marketing API/Creatives/Guides/Creative tools/CTA recommendations
+- [Smart Fix](#1741472523309058) — Marketing API/Creatives/Guides/Creative tools/Smart Fix
+- [Creative Fatigue Detection](#1767568085608450) — Marketing API/Creatives/Guides/Creative tools/Creative Fatigue Detection
+- [Creative reports](#1739067487319042) — Marketing API/Creatives/Guides/Creative reports
+- [Creative basic reports](#1749023062758401) — Marketing API/Creatives/Guides/Creative reports/Creative basic reports
+- [Creative insights](#1749023065231362) — Marketing API/Creatives/Guides/Creative reports/Creative insights
+- [API reference](#1740649324143617) — Marketing API/Creatives/API reference
+- [Catalog Management](#1739578433846274) — Marketing API/Catalog Management
+- [Overview](#1754263078057986) — Marketing API/Catalog Management/Overview
+- [Guides](#1754263100123137) — Marketing API/Catalog Management/Guides
+- [Mapping between Catalog Management features in Catalog Manager and API configurations](#1782141580104705) — Marketing API/Catalog Management/Guides/Mapping between Catalog Management features in Catalog Manager and API configurations
+- [Create catalogs and add products](#1754263112945665) — Marketing API/Catalog Management/Guides/Create catalogs and add products
+- [Upload products to different catalog types via JSON schema](#1766862002851842) — Marketing API/Catalog Management/Guides/Create catalogs and add products/Upload products to different catalog types via JSON schema
+- [Product image requirements](#1739578479392770) — Marketing API/Catalog Management/Guides/Create catalogs and add products/Product image requirements
+- [Product set  operators and fields](#1740673108747265) — Marketing API/Catalog Management/Guides/Create catalogs and add products/Product set  operators and fields
+- [Troubleshoot catalogs with diagnostics](#1780803490136066) — Marketing API/Catalog Management/Guides/Troubleshoot catalogs with diagnostics
+- [Mapping between Catalog Diagnostics features in Catalog Manager and API configurations](#1780803525320706) — Marketing API/Catalog Management/Guides/Troubleshoot catalogs with diagnostics/Mapping between Catalog Diagnostics features in Catalog Manager and API configurations
+- [Obtain Catalog Product Insights](#1805642743426050) — Marketing API/Catalog Management/Guides/Obtain Catalog Product Insights
+- [Mapping between Catalog Product Insights features in Catalog Manager and API configurations](#1805642902406145) — Marketing API/Catalog Management/Guides/Obtain Catalog Product Insights/Mapping between Catalog Product Insights features in Catalog Manager and API configurations
+- [Upload catalog videos to associate with catalog products](#1803654904260674) — Marketing API/Catalog Management/Guides/Upload catalog videos to associate with catalog products
+- [Manage catalogs in a Business Center](#1738964064361474) — Marketing API/Catalog Management/Guides/Manage catalogs in a Business Center
+- [Use catalogs when creating Shopping Ads](#1754263154550786) — Marketing API/Catalog Management/Guides/Use catalogs when creating Shopping Ads
+- [API reference](#1739578477445121) — Marketing API/Catalog Management/API reference
+- [TikTok Store](#1739581901879298) — Marketing API/TikTok Store
+- [Overview](#1763572749953025) — Marketing API/TikTok Store/Overview
+- [Guides](#1739581925704769) — Marketing API/TikTok Store/Guides
+- [API reference](#1740641357077505) — Marketing API/TikTok Store/API reference
+- [Campaign Management](#1735713781404673) — Marketing API/Campaign Management
+- [Overview](#1737585544915970) — Marketing API/Campaign Management/Overview
+- [Ads structure](#1739381193120770) — Marketing API/Campaign Management/Overview/Ads structure
+- [Guides](#1739381695768577) — Marketing API/Campaign Management/Guides
+- [Mapping between campaign features in TikTok Ads Manager and API configurations](#1740673047618561) — Marketing API/Campaign Management/Guides/Mapping between campaign features in TikTok Ads Manager and API configurations
+- [Campaign](#1745292231199745) — Marketing API/Campaign Management/Guides/Campaign
+- [Create a campaign](#1737719523561474) — Marketing API/Campaign Management/Guides/Campaign/Create a campaign
+- [Copy a campaign](#1788434533212162) — Marketing API/Campaign Management/Guides/Campaign/Copy a campaign
+- [Advertising objective](#1737585562434561) — Marketing API/Campaign Management/Guides/Campaign/Advertising objective
+- [App promotion](#1747553433902082) — Marketing API/Campaign Management/Guides/Campaign/Advertising objective/App promotion
+- [Website conversions](#1747553507237889) — Marketing API/Campaign Management/Guides/Campaign/Advertising objective/Website conversions
+- [Sales](#1834189283112962) — Marketing API/Campaign Management/Guides/Campaign/Advertising objective/Sales
+- [Upgrade from Product Sales or Website Conversions to the Sales objective](#1834189985160193) — Marketing API/Campaign Management/Guides/Campaign/Advertising objective/Upgrade from Product Sales or Website Conversions to the Sales objective
+- [API reference](#1744571210012673) — Marketing API/Campaign Management/Guides/Campaign/Reach & Frequency/API reference
+- [Upgraded Smart+ Campaign](#1853452461203458) — Marketing API/Campaign Management/Guides/Campaign/Upgraded Smart+ Campaign
+- [Retrieve data for Upgrade Smart+, Smart+, and Manual Campaigns](#1854103649826817) — Marketing API/Campaign Management/Guides/Campaign/Upgraded Smart+ Campaign/Retrieve data for Upgrade Smart+, Smart+, and Manual Campaigns
+- [FAQs](#1854104036724929) — Marketing API/Campaign Management/Guides/Campaign/Upgraded Smart+ Campaign/FAQs
+- [Compatibility changes for Upgraded Smart+ Campaigns](#1854112742370306) — Marketing API/Campaign Management/Guides/Campaign/Upgraded Smart+ Campaign/Compatibility changes for Upgraded Smart+ Campaigns
+- [Dedicated Campaign](#1740029173531649) — Marketing API/Campaign Management/Guides/Campaign/Dedicated Campaign
+- [Dedicated Campaign quota limits](#1752256248260610) — Marketing API/Campaign Management/Guides/Campaign/Dedicated Campaign/Dedicated Campaign quota limits
+- [Use split tests](#1742668948278274) — Marketing API/Campaign Management/Guides/Campaign/Super Split Test/Use split tests
+- [Budget](#1739381246298114) — Marketing API/Campaign Management/Guides/Campaign/Budget
+- [Campaign Budget Optimization](#1739381757818881) — Marketing API/Campaign Management/Guides/Campaign/Budget/Campaign Budget Optimization
+- [Budget verification ratio and value range for each currency](#1737585839634433) — Marketing API/Campaign Management/Guides/Campaign/Budget/Budget verification ratio and value range for each currency
+- [Promote campaign](#1785880454546433) — Marketing API/Campaign Management/Guides/Campaign/Promote campaign
+- [Realtime API](#1805437148769281) — Marketing API/Campaign Management/Guides/Campaign/Realtime API
+- [Ad group](#1745292233615362) — Marketing API/Campaign Management/Guides/Ad group
+- [Create an ad group](#1738857874837506) — Marketing API/Campaign Management/Guides/Ad group/Create an ad group
+- [Placements](#1745292441739265) — Marketing API/Campaign Management/Guides/Ad group/Placements
+- [Automatic Search Placement](#1771747626094593) — Marketing API/Campaign Management/Guides/Ad group/Placements/Automatic Search Placement
+- [Targeting](#1745292439329793) — Marketing API/Campaign Management/Guides/Ad group/Targeting
+- [Audience targeting](#1739381236849665) — Marketing API/Campaign Management/Guides/Ad group/Targeting/Audience targeting
+- [Smart Targeting](#1783164662979586) — Marketing API/Campaign Management/Guides/Ad group/Targeting/Audience targeting/Smart Targeting
+- [Enable Smart Targeting for your ad groups](#1783164826830849) — Marketing API/Campaign Management/Guides/Ad group/Targeting/Audience targeting/Smart Targeting/Enable Smart Targeting for your ad groups
+- [Contextual targeting](#1745292519923713) — Marketing API/Campaign Management/Guides/Ad group/Targeting/Contextual targeting
+- [Conversion events](#1739361474981889) — Marketing API/Campaign Management/Guides/Ad group/Conversion events
+- [Bidding](#1745292444424193) — Marketing API/Campaign Management/Guides/Ad group/Bidding
+- [Value-Based Optimization](#1739381743067137) — Marketing API/Campaign Management/Guides/Ad group/Bidding/Value-Based Optimization
+- [Enable Value-Based Optimization in Manual Campaigns](#1770019181843458) — Marketing API/Campaign Management/Guides/Ad group/Bidding/Value-Based Optimization/Enable Value-Based Optimization in Manual Campaigns
+- [Enable Value-Based Optimization in Smart+ Campaigns](#1840137502583809) — Marketing API/Campaign Management/Guides/Ad group/Bidding/Value-Based Optimization/Enable Value-Based Optimization in Smart+ Campaigns
+- [Bidding limits](#1750444779586561) — Marketing API/Campaign Management/Guides/Ad group/Bidding/Bidding limits
+- [Attribution window and event count](#1777694366654465) — Marketing API/Campaign Management/Guides/Ad group/Attribution window and event count
+- [Supported secondary statuses for a primary status](#1757239620352002) — Marketing API/Campaign Management/Guides/Ad group/Supported secondary statuses for a primary status
+- [Estimated Delivery Results](#1746463274713089) — Marketing API/Campaign Management/Guides/Ad group/Estimated Delivery Results
+- [Get recommended budgets](#1746463333984258) — Marketing API/Campaign Management/Guides/Ad group/Estimated Delivery Results/Get recommended budgets
+- [Get recommended bids](#1746463347473410) — Marketing API/Campaign Management/Guides/Ad group/Estimated Delivery Results/Get recommended bids
+- [Ad](#1745292235571201) — Marketing API/Campaign Management/Guides/Ad
+- [Create an ad](#1745292553358338) — Marketing API/Campaign Management/Guides/Ad/Create an ad
+- [Smart Creative](#1767322784934914) — Marketing API/Campaign Management/Guides/Ad/Smart Creative
+- [Identities](#1738958351620097) — Marketing API/Campaign Management/Guides/Ad/Identities
+- [Deeplink](#1779541971843073) — Marketing API/Campaign Management/Guides/Ad/Deeplink
+- [Custom Product Pages](#1798658439859202) — Marketing API/Campaign Management/Guides/Ad/Custom Product Pages
+- [AIGC self-disclosure toggle](#1799186631031809) — Marketing API/Campaign Management/Guides/Ad/AIGC self-disclosure toggle
+- [Automatic Enhancements](#1855450880142402) — Marketing API/Campaign Management/Guides/Ad/Automatic Enhancements
+- [FAQs](#1767309272869890) — Marketing API/Campaign Management/Guides/FAQs
+- [API reference](#1739381823123458) — Marketing API/Campaign Management/API reference
+- [Create a Customer File Audience](#1747012327159809) — Marketing API/Audience Management/Guides/Create an audience/Create a Custom Audience/Create a Customer File Audience
+- [Reporting](#1738864739862530) — Marketing API/Reporting
+- [Overview](#1751087777884161) — Marketing API/Reporting/Overview
+- [Guides](#1751087792726017) — Marketing API/Reporting/Guides
+- [Synchronous  and asynchronous reports](#1751088469160001) — Marketing API/Reporting/Guides/Synchronous  and asynchronous reports
+- [Run a synchronous report](#1738864778664961) — Marketing API/Reporting/Guides/Synchronous  and asynchronous reports/Run a synchronous report
+- [Run an asynchronous report](#1738864800380930) — Marketing API/Reporting/Guides/Synchronous  and asynchronous reports/Run an asynchronous report
+- [Report types](#1738864835805186) — Marketing API/Reporting/Guides/Report types
+- [Basic reports](#1738864915188737) — Marketing API/Reporting/Guides/Report types/Basic reports
+- [Supported dimensions](#1751443956638721) — Marketing API/Reporting/Guides/Report types/Basic reports/Supported dimensions
+- [Supported metrics for a dimension in basic reports](#1759239462689793) — Marketing API/Reporting/Guides/Report types/Basic reports/Supported dimensions/Supported metrics for a dimension in basic reports
+- [Supported metrics](#1751443967255553) — Marketing API/Reporting/Guides/Report types/Basic reports/Supported metrics
+- [Supported filters](#1751443975608321) — Marketing API/Reporting/Guides/Report types/Basic reports/Supported filters
+- [Audience reports](#1738864928947201) — Marketing API/Reporting/Guides/Report types/Audience reports
+- [Supported dimensions](#1751454103714818) — Marketing API/Reporting/Guides/Report types/Audience reports/Supported dimensions
+- [Supported metrics for a dimension in audience reports](#1762404685488130) — Marketing API/Reporting/Guides/Report types/Audience reports/Supported dimensions/Supported metrics for a dimension in audience reports
+- [Supported metrics](#1751454162042882) — Marketing API/Reporting/Guides/Report types/Audience reports/Supported metrics
+- [Supported filters](#1751454172429314) — Marketing API/Reporting/Guides/Report types/Audience reports/Supported filters
+- [Supported dimensions](#1751617879104514) — Marketing API/Reporting/Guides/Report types/Playable ad reports/Supported dimensions
+- [Supported metrics](#1751617882108929) — Marketing API/Reporting/Guides/Report types/Playable ad reports/Supported metrics
+- [Supported filters](#1751617884206210) — Marketing API/Reporting/Guides/Report types/Playable ad reports/Supported filters
+- [Supported dimensions](#1751625287345154) — Marketing API/Reporting/Guides/Report types/DSA reports/Supported dimensions
+- [Supported metrics](#1751625293044737) — Marketing API/Reporting/Guides/Report types/DSA reports/Supported metrics
+- [Supported filters](#1751625296192514) — Marketing API/Reporting/Guides/Report types/DSA reports/Supported filters
+- [Business Center reports](#1775747432712194) — Marketing API/Reporting/Guides/Report types/Business Center reports
+- [Supported dimensions](#1775747465089026) — Marketing API/Reporting/Guides/Report types/Business Center reports/Supported dimensions
+- [Supported metrics for a dimension in Business Center reports](#1775747492072449) — Marketing API/Reporting/Guides/Report types/Business Center reports/Supported dimensions/Supported metrics for a dimension in Business Center reports
+- [Supported metrics](#1775747476019266) — Marketing API/Reporting/Guides/Report types/Business Center reports/Supported metrics
+- [Supported filters](#1775747484045313) — Marketing API/Reporting/Guides/Report types/Business Center reports/Supported filters
+- [GMV max ads reports](#1803073629472770) — Marketing API/Reporting/Guides/Report types/GMV max ads reports
+- [Supported dimensions](#1803073899092993) — Marketing API/Reporting/Guides/Report types/GMV max ads reports/Supported dimensions
+- [Supported metrics](#1803073913733121) — Marketing API/Reporting/Guides/Report types/GMV max ads reports/Supported metrics
+- [Best practices to reduce timeouts in synchronous reports](#1738864817670145) — Marketing API/Reporting/Guides/Best practices to reduce timeouts in synchronous reports
+- [Data latency for reports](#1738864894606337) — Marketing API/Reporting/Guides/Data latency for reports
+- [Reporting performance improvements](#1757262274182145) — Marketing API/Reporting/Guides/Reporting performance improvements
+- [FAQs](#1738864850353154) — Marketing API/Reporting/Guides/FAQs
+- [Reporting Subscription API](#1861445809243137) — Marketing API/Reporting/Guides/Reporting Subscription API
+- [API reference](#1740649343188994) — Marketing API/Reporting/API reference
+- [Get profile data of a TikTok account](#1762228399168514) — API Reference/Accounts/Insights/Get profile data of a TikTok account
+- [Publish a public video post to an owned account](#1762228496095234) — API Reference/Accounts/Posts/Publish a public video post to an owned account
+- [Get diagnoses for ad groups](#1738674986981378) — API Reference/Ad Diagnosis/Get diagnoses for ad groups
+- [Ad Groups](#1739314549888002) — API Reference/Ad Groups
+- [Get ad groups](#1739314558673922) — API Reference/Ad Groups/Get ad groups
+- [Get the dynamic quota on active ad groups](#1768463039162369) — API Reference/Ad Groups/Get the dynamic quota on active ad groups
+- [Estimate audience size](#1740302379236353) — API Reference/Ad Groups/Estimate audience size
+- [Create an ad group](#1739499616346114) — API Reference/Ad Groups/Create an ad group
+- [Update an ad group](#1739586761631745) — API Reference/Ad Groups/Update an ad group
+- [Update the statuses of ad groups](#1739591716326402) — API Reference/Ad Groups/Update the statuses of ad groups
+- [Update the budgets of ad groups](#1739591133130817) — API Reference/Ad Groups/Update the budgets of ad groups
+- [Get review info of ad groups](#1740554277061634) — API Reference/Ad Review/Get review info of ad groups
+- [Customer File](#1739940501023746) — API Reference/Audience/Customer File
+- [Upload an audience file](#1739940567842818) — API Reference/Audience/Customer File/Upload an audience file
+- [Create an audience by file](#1739940570793985) — API Reference/Audience/Customer File/Create an audience by file
+- [Apply audiences to ad groups](#1758615097524225) — API Reference/Audience/Apply audiences to ad groups
+- [Get the balance and budget of ad accounts](#1739939106470913) — API Reference/BC Payments/Get the balance and budget of ad accounts
+- [Get the budget change history of an ad account](#1830173979548674) — API Reference/BC Payments/Get the budget change history of an ad account
+- [Upload a business certificate](#1739938996913218) — API Reference/BC Assets/Upload a business certificate
+- [BC Reporting](#1775752272288770) — API Reference/BC Reporting
+- [Get currencies and registration areas for ad accounts](#1775752357139457) — API Reference/BC Reporting/Get currencies and registration areas for ad accounts
+- [Upload an image](#1832184437720193) — API Reference/Business Messaging/Direct messages/Upload an image
+- [Download an image or a video from a message](#1832184455450626) — API Reference/Business Messaging/Direct messages/Download an image or a video from a message
+- [Campaign](#1739315728330753) — API Reference/Campaign
+- [Get campaigns](#1739315828649986) — API Reference/Campaign/Get campaigns
+- [Create a campaign](#1739318962329602) — API Reference/Campaign/Create a campaign
+- [Update a campaign](#1739320422086657) — API Reference/Campaign/Update a campaign
+- [Update the operation statuses of campaigns](#1739320994354178) — API Reference/Campaign/Update the operation statuses of campaigns
+- [Get the quota for a SKAN Dedicated Campaign per ad network](#1752256376677378) — API Reference/Campaign/Get the quota for a SKAN Dedicated Campaign per ad network
+- [Create an asynchronous campaign copy task](#1788434394151938) — API Reference/Campaign/Create an asynchronous campaign copy task
+- [Get the results of an asynchronous campaign copy task](#1788434463507458) — API Reference/Campaign/Get the results of an asynchronous campaign copy task
+- [Catalog Management](#1740132866693122) — API Reference/Catalog Management
+- [Create a catalog](#1740306481704961) — API Reference/Catalog Management/Create a catalog
+- [Update the name of a catalog](#1740306544966657) — API Reference/Catalog Management/Update the name of a catalog
+- [Delete a catalog](#1740310064588801) — API Reference/Catalog Management/Delete a catalog
+- [Get catalogs](#1740315452868610) — API Reference/Catalog Management/Get catalogs
+- [Get the lexicon list for a catalog](#1740488375815169) — API Reference/Catalog Management/Get the lexicon list for a catalog
+- [Migrate a catalog to a BC](#1740490222539778) — API Reference/Catalog Management/Migrate a catalog to a BC
+- [Get available regions](#1740491257516034) — API Reference/Catalog Management/Get available regions
+- [Get locations and currencies](#1740491571747841) — API Reference/Catalog Management/Get locations and currencies
+- [Get the overview of a catalog](#1740492470201345) — API Reference/Catalog Management/Get the overview of a catalog
+- [Catalog Event Sources](#1740132891438082) — API Reference/Catalog Event Sources
+- [Bind an event source to a catalog](#1740492491200513) — API Reference/Catalog Event Sources/Bind an event source to a catalog
+- [Unbind an event source from a catalog](#1740492512449538) — API Reference/Catalog Event Sources/Unbind an event source from a catalog
+- [Get event source binding info of a catalog](#1740492531343362) — API Reference/Catalog Event Sources/Get event source binding info of a catalog
+- [Catalog Feeds](#1740132921913346) — API Reference/Catalog Feeds
+- [Create a feed](#1740665161957377) — API Reference/Catalog Feeds/Create a feed
+- [Get feeds](#1740665183073281) — API Reference/Catalog Feeds/Get feeds
+- [Update a feed](#1740665197662210) — API Reference/Catalog Feeds/Update a feed
+- [Delete a feed](#1740665210863617) — API Reference/Catalog Feeds/Delete a feed
+- [Get the log of a feed](#1740665225631810) — API Reference/Catalog Feeds/Get the log of a feed
+- [Update the schedule status of a feed](#1750349624999937) — API Reference/Catalog Feeds/Update the schedule status of a feed
+- [Catalog Products](#1740132940622850) — API Reference/Catalog Products
+- [Upload products via a file URL](#1740496787164161) — API Reference/Catalog Products/Upload products via a file URL
+- [Upload products via a JSON schema](#1740497429681153) — API Reference/Catalog Products/Upload products via a JSON schema
+- [Update products](#1740562287852546) — API Reference/Catalog Products/Update products
+- [Remove products](#1740562489236481) — API Reference/Catalog Products/Remove products
+- [Get products](#1740564136678402) — API Reference/Catalog Products/Get products
+- [Get the product handling log](#1740570027173889) — API Reference/Catalog Products/Get the product handling log
+- [Catalog Product Sets](#1740132953884673) — API Reference/Catalog Product Sets
+- [Get product sets](#1740570556295169) — API Reference/Catalog Product Sets/Get product sets
+- [Get products in a product set](#1740571478441986) — API Reference/Catalog Product Sets/Get products in a product set
+- [Create a product set by conditions](#1740572891104257) — API Reference/Catalog Product Sets/Create a product set by conditions
+- [Create a product set by file](#1846770644217858) — API Reference/Catalog Product Sets/Create a product set by file
+- [Update a product set](#1740572974725122) — API Reference/Catalog Product Sets/Update a product set
+- [Delete product sets](#1740573143966722) — API Reference/Catalog Product Sets/Delete product sets
+- [Catalog Videos](#1803654722508866) — API Reference/Catalog Videos
+- [Upload catalog videos via a file URL](#1803655037415489) — API Reference/Catalog Videos/Upload catalog videos via a file URL
+- [Get the catalog video handling log](#1803655061642242) — API Reference/Catalog Videos/Get the catalog video handling log
+- [Get the uploaded catalog videos within a catalog](#1803655082498050) — API Reference/Catalog Videos/Get the uploaded catalog videos within a catalog
+- [Delete uploaded catalog videos](#1803655103069185) — API Reference/Catalog Videos/Delete uploaded catalog videos
+- [Catalog Video Templates](#1740132982369282) — API Reference/Catalog Video Templates
+- [Get video packages](#1740574099715073) — API Reference/Catalog Video Templates/Get video packages
+- [Catalog Diagnostics](#1771117054564354) — API Reference/Catalog Diagnostics
+- [Get synchronous catalog product diagnostic information](#1771117232728066) — API Reference/Catalog Diagnostics/Get synchronous catalog product diagnostic information
+- [Create an asynchronous download task for catalog product diagnostic information](#1771117279175682) — API Reference/Catalog Diagnostics/Create an asynchronous download task for catalog product diagnostic information
+- [Download asynchronous catalog product diagnostic information](#1771117294731266) — API Reference/Catalog Diagnostics/Download asynchronous catalog product diagnostic information
+- [Get catalog event source diagnostic information](#1780799405041665) — API Reference/Catalog Diagnostics/Get catalog event source diagnostic information
+- [Get catalog event trends and match rate](#1780802101608450) — API Reference/Catalog Diagnostics/Get catalog event trends and match rate
+- [Catalog Insights](#1805640759207937) — API Reference/Catalog Insights
+- [Get filters for catalog product insights](#1805640864553985) — API Reference/Catalog Insights/Get filters for catalog product insights
+- [Get trending catalog products](#1805640886872066) — API Reference/Catalog Insights/Get trending catalog products
+- [Get trending catalog product categories](#1805640900563969) — API Reference/Catalog Insights/Get trending catalog product categories
+- [Get the downloaded file](#1739924165710849) — API Reference/Change Log/Get the downloaded file
+- [Creative Portfolios](#1739091934311426) — API Reference/Creative Portfolios
+- [Create a portfolio](#1739091950439426) — API Reference/Creative Portfolios/Create a portfolio
+- [Get a portfolio by ID](#1739092113671170) — API Reference/Creative Portfolios/Get a portfolio by ID
+- [Get portfolios within an ad account](#1766324010279938) — API Reference/Creative Portfolios/Get portfolios within an ad account
+- [Delete portfolios](#1834560049625089) — API Reference/Creative Portfolios/Delete portfolios
+- [Creative Reports](#1749092271949826) — API Reference/Creative Reports
+- [Creative basic reports](#1740662135093314) — API Reference/Creative Reports/Creative basic reports
+- [Supported metrics in creative basic reports](#1861363088053250) — API Reference/Creative Reports/Creative basic reports/Supported metrics in creative basic reports
+- [Creative Insights](#1738824477276162) — API Reference/Creative Reports/Creative Insights
+- [Get ad benchmarks](#1738824501176321) — API Reference/Creative Reports/Creative Insights/Get ad benchmarks
+- [Get in-second performance](#1738825259075586) — API Reference/Creative Reports/Creative Insights/Get in-second performance
+- [Creative Tools](#1737583624272897) — API Reference/Creative Tools
+- [Edit an image](#1739067107903489) — API Reference/Creative Tools/Edit an image
+- [Preview an ad or a creative](#1739403070695426) — API Reference/Creative Tools/Preview an ad or a creative
+- [Share creative assets](#1773192725768193) — API Reference/Creative Tools/Share creative assets
+- [Delete creative assets](#1797202997456897) — API Reference/Creative Tools/Delete creative assets
+- [Get Smart Text recommendations](#1739084248002626) — API Reference/Creative Tools/Get Smart Text recommendations
+- [Get recommended CTAs](#1739362202742785) — API Reference/Creative Tools/Get recommended CTAs
+- [Create a Smart Fix task](#1741468875279361) — API Reference/Creative Tools/Create a Smart Fix task
+- [Get the results of a Smart Fix task](#1741469487859714) — API Reference/Creative Tools/Get the results of a Smart Fix task
+- [Get Creative Fatigue Detection results](#1767568466842626) — API Reference/Creative Tools/Get Creative Fatigue Detection results
+- [Get trending videos related to hashtags](#1825119056527362) — API Reference/Discovery/Get trending videos related to hashtags
+- [Get trending videos related to tracks](#1825119068941314) — API Reference/Discovery/Get trending videos related to tracks
+- [Report App, Web, Offline, or CRM Events](#1771101303285761) — API Reference/Events 2.0/Report App, Web, Offline, or CRM Events
+- [Get App Retargeting Events](#1740859371033601) — API Reference/Events 1.0/App Events/Get App Retargeting Events
+- [Files](#1737719988918274) — API Reference/Files
+- [Upload a file](#1737720893061122) — API Reference/Files/Upload a file
+- [Start a file chunk upload task](#1737721229896705) — API Reference/Files/Start a file chunk upload task
+- [Transfer a file chunk](#1737721489945601) — API Reference/Files/Transfer a file chunk
+- [Finish a chunk upload task](#1737721642924033) — API Reference/Files/Finish a chunk upload task
+- [Check the names of files](#1759130033155073) — API Reference/Files/Check the names of files
+- [GMV Max](#1822000911166465) — API Reference/GMV Max
+- [Get GMV Max Campaigns](#1826463372290177) — API Reference/GMV Max/Get GMV Max Campaigns
+- [Get the details of a GMV Max Campaign](#1822000968821762) — API Reference/GMV Max/Get the details of a GMV Max Campaign
+- [Create a GMV Max Campaign](#1822000988713089) — API Reference/GMV Max/Create a GMV Max Campaign
+- [Update a GMV Max Campaign](#1822001009002497) — API Reference/GMV Max/Update a GMV Max Campaign
+- [Get the recommended GMV Max ROI target and budget](#1822001024720897) — API Reference/GMV Max/Get the recommended GMV Max ROI target and budget
+- [Create a max delivery or creative boost session](#1835246967275522) — API Reference/GMV Max/Create a max delivery or creative boost session
+- [Update a max delivery or creative boost session](#1835247009119233) — API Reference/GMV Max/Update a max delivery or creative boost session
+- [Get max delivery or creative boost sessions within a campaign](#1835246996436162) — API Reference/GMV Max/Get max delivery or creative boost sessions within a campaign
+- [Get details of max delivery or creative boost sessions](#1835247031331842) — API Reference/GMV Max/Get details of max delivery or creative boost sessions
+- [Delete a max delivery or creative boost session](#1835246983475217) — API Reference/GMV Max/Delete a max delivery or creative boost session
+- [Get TikTok Shops for GMV Max Campaigns](#1822001044479041) — API Reference/GMV Max/Get TikTok Shops for GMV Max Campaigns
+- [Check the availability of a TikTok Shop for Product GMV Max Campaigns](#1822001084174338) — API Reference/GMV Max/Check the availability of a TikTok Shop for Product GMV Max Campaigns
+- [Get identities for GMV Max Campaigns](#1822001101474882) — API Reference/GMV Max/Get identities for GMV Max Campaigns
+- [Check the occupancy of identities or products in Shopping Ads](#1822001136924674) — API Reference/GMV Max/Check the occupancy of identities or products in Shopping Ads
+- [Get posts for a Product GMV Max Campaign](#1822001168512129) — API Reference/GMV Max/Get posts for a Product GMV Max Campaign
+- [Get details of videos in customized posts](#1830215925061633) — API Reference/GMV Max/Get details of videos in customized posts
+- [Remove or add back creatives in a GMV Max Campaign](#1861260625563202) — API Reference/GMV Max/Remove or add back creatives in a GMV Max Campaign
+- [Get the TikTok Shop exclusive authorization status of an ad account](#1822001184635905) — API Reference/GMV Max/Get the TikTok Shop exclusive authorization status of an ad account
+- [Grant an ad account exclusive authorization for a TikTok Shop](#1822001200356354) — API Reference/GMV Max/Grant an ad account exclusive authorization for a TikTok Shop
+- [Run a GMV Max Campaign report](#1824721673497601) — API Reference/GMV Max/Run a GMV Max Campaign report
+- [Metrics in GMV Max Campaign reports](#1824722485971009) — API Reference/GMV Max/Run a GMV Max Campaign report/Metrics in GMV Max Campaign reports
+- [Identity](#1740133137507393) — API Reference/Identity
+- [Create an identity](#1740654203526146) — API Reference/Identity/Create an identity
+- [Delete an identity](#1759155939236865) — API Reference/Identity/Delete an identity
+- [Get the identity list](#1740218420781057) — API Reference/Identity/Get the identity list
+- [Get info about an identity](#1740218453385217) — API Reference/Identity/Get info about an identity
+- [Get posts under an identity](#1740218475032577) — API Reference/Identity/Get posts under an identity
+- [Get live videos under an identity](#1785238052792321) — API Reference/Identity/Get live videos under an identity
+- [Get info about TikTok posts](#1740218522178562) — API Reference/Identity/Get info about TikTok posts
+- [Images](#1739067422728193) — API Reference/Images
+- [Upload an image](#1739067433456642) — API Reference/Images/Upload an image
+- [Update the name of an image](#1740039806891010) — API Reference/Images/Update the name of an image
+- [Get info about images](#1740051721711618) — API Reference/Images/Get info about images
+- [Search for images](#1740052016789506) — API Reference/Images/Search for images
+- [Create an R&F ad group](#1738235338194945) — API Reference/Reach & Frequency/Create an R&F ad group
+- [Update an R&F ad group](#1738235402874882) — API Reference/Reach & Frequency/Update an R&F ad group
+- [Get estimated info of R&F ad groups](#1740489551354881) — API Reference/Reach & Frequency/Get estimated info of R&F ad groups
+- [Reporting](#1740302665828417) — API Reference/Reporting
+- [Run a synchronous report](#1740302848100353) — API Reference/Reporting/Run a synchronous report
+- [Create an asynchronous report task](#1740302766489602) — API Reference/Reporting/Create an asynchronous report task
+- [Get the status of an async report task](#1740302781443073) — API Reference/Reporting/Get the status of an async report task
+- [Download the output of an async report task](#1740302808815618) — API Reference/Reporting/Download the output of an async report task
+- [Cancel an asynchronous report task](#1803615367145537) — API Reference/Reporting/Cancel an asynchronous report task
+- [Smart Creative](#1739472835319809) — API Reference/Smart Creative
+- [Get Smart Creative materials](#1739473020978177) — API Reference/Smart Creative/Get Smart Creative materials
+- [Create Smart Creative ads](#1739473063234626) — API Reference/Smart Creative/Create Smart Creative ads
+- [Update Smart Creative materials](#1739473077112833) — API Reference/Smart Creative/Update Smart Creative materials
+- [Update the statuses of Smart Creative materials](#1739506701165570) — API Reference/Smart Creative/Update the statuses of Smart Creative materials
+- [Upgraded Smart+](#1843301794874370) — API Reference/Upgraded Smart+
+- [Campaigns](#1843310518576130) — API Reference/Upgraded Smart+/Campaigns
+- [Get Upgraded Smart+ Campaigns](#1843312818332930) — API Reference/Upgraded Smart+/Campaigns/Get Upgraded Smart+ Campaigns
+- [Create an Upgraded Smart+ Campaign](#1843312852800706) — API Reference/Upgraded Smart+/Campaigns/Create an Upgraded Smart+ Campaign
+- [Update an Upgraded Smart+ Campaign](#1843312876001282) — API Reference/Upgraded Smart+/Campaigns/Update an Upgraded Smart+ Campaign
+- [Update the operation statuses of Upgraded Smart+ Campaigns](#1843312888885314) — API Reference/Upgraded Smart+/Campaigns/Update the operation statuses of Upgraded Smart+ Campaigns
+- [Ad groups](#1843310524500993) — API Reference/Upgraded Smart+/Ad groups
+- [Get Upgraded Smart+ Ad Groups](#1843314879617026) — API Reference/Upgraded Smart+/Ad groups/Get Upgraded Smart+ Ad Groups
+- [Create an Upgraded Smart+ Ad Group](#1843314887930946) — API Reference/Upgraded Smart+/Ad groups/Create an Upgraded Smart+ Ad Group
+- [Update an Upgraded Smart+ Ad Group](#1843314894279682) — API Reference/Upgraded Smart+/Ad groups/Update an Upgraded Smart+ Ad Group
+- [Update the operation statuses of Upgraded Smart+ Ad Groups](#1843314908153858) — API Reference/Upgraded Smart+/Ad groups/Update the operation statuses of Upgraded Smart+ Ad Groups
+- [Update the budgets of Upgraded Smart+ Ad Groups](#1843314914438466) — API Reference/Upgraded Smart+/Ad groups/Update the budgets of Upgraded Smart+ Ad Groups
+- [Ads](#1843310530260097) — API Reference/Upgraded Smart+/Ads
+- [Get Upgraded Smart+ Ads](#1843317378982914) — API Reference/Upgraded Smart+/Ads/Get Upgraded Smart+ Ads
+- [Create an Upgraded Smart+ Ad](#1843317390059522) — API Reference/Upgraded Smart+/Ads/Create an Upgraded Smart+ Ad
+- [Update an Upgraded Smart+ Ad](#1843317411665921) — API Reference/Upgraded Smart+/Ads/Update an Upgraded Smart+ Ad
+- [Update the operation statuses of Upgraded Smart+ Ads](#1843317423164482) — API Reference/Upgraded Smart+/Ads/Update the operation statuses of Upgraded Smart+ Ads
+- [Disable or enable creatives in an Upgraded Smart+ Ad](#1843317433577601) — API Reference/Upgraded Smart+/Ads/Disable or enable creatives in an Upgraded Smart+ Ad
+- [Preview Upgraded Smart+ Ads](#1843317445798914) — API Reference/Upgraded Smart+/Ads/Preview Upgraded Smart+ Ads
+- [Ad Review](#1843310536069122) — API Reference/Upgraded Smart+/Ad Review
+- [Get the review info of Upgraded Smart+ Ads](#1843317465695233) — API Reference/Upgraded Smart+/Ad Review/Get the review info of Upgraded Smart+ Ads
+- [Get the review info of Upgraded Smart+ Ad creatives](#1843317474334722) — API Reference/Upgraded Smart+/Ad Review/Get the review info of Upgraded Smart+ Ad creatives
+- [Appeal rejection of an Upgraded Smart+ Ad](#1843317522553106) — API Reference/Upgraded Smart+/Ad Review/Appeal rejection of an Upgraded Smart+ Ad
+- [Reporting](#1843310542601218) — API Reference/Upgraded Smart+/Reporting
+- [Run an Upgraded Smart+ Creative Overview Report](#1843317489576961) — API Reference/Upgraded Smart+/Reporting/Run an Upgraded Smart+ Creative Overview Report
+- [Supported dimensions for Upgraded Smart+ Creative Overview Reports](#1843337892165889) — API Reference/Upgraded Smart+/Reporting/Run an Upgraded Smart+ Creative Overview Report/Supported dimensions for Upgraded Smart+ Creative Overview Reports
+- [Supported ad-level metrics for Upgraded Smart+ Creative Reports](#1843337909199938) — API Reference/Upgraded Smart+/Reporting/Run an Upgraded Smart+ Creative Overview Report/Supported ad-level metrics for Upgraded Smart+ Creative Reports
+- [Run an Upgraded Smart+ Creative Breakdown Report](#1843317510389761) — API Reference/Upgraded Smart+/Reporting/Run an Upgraded Smart+ Creative Breakdown Report
+- [Supported dimensions for Upgraded Smart+ Creative Breakdown Reports](#1843337879988226) — API Reference/Upgraded Smart+/Reporting/Run an Upgraded Smart+ Creative Breakdown Report/Supported dimensions for Upgraded Smart+ Creative Breakdown Reports
+- [Get Spark Ads video recommendations for a Business Account](#1825128684907522) — API Reference/Spark Ads Recommendation/Get Spark Ads video recommendations for a Business Account
+- [Create a campaign, an ad group, and a Spark Ad in one step](#1829744071179330) — API Reference/Spark Ads Recommendation/Create a campaign, an ad group, and a Spark Ad in one step
+- [Default settings for All-in-One Spark Ads](#1829744101665810) — API Reference/Spark Ads Recommendation/Create a campaign, an ad group, and a Spark Ad in one step/Default settings for All-in-One Spark Ads
+- [Run the winning ad group](#1742666543736834) — API Reference/Super Split Test/Run the winning ad group
+- [TikTok Store](#1740661959804929) — API Reference/TikTok Store
+- [Get available stores under an ad account](#1752267762718722) — API Reference/TikTok Store/Get available stores under an ad account
+- [Get products within a TikTok Shop](#1793482248880130) — API Reference/TikTok Store/Get products within a TikTok Shop
+- [Search for location targeting tags](#1761236883355649) — API Reference/Tools/Search for location targeting tags
+- [Obtain details about location targeting tags by ID](#1761237001980929) — API Reference/Tools/Obtain details about location targeting tags by ID
+- [Search for or list targeting categories and hashtags for interests and behaviors](#1796638342793218) — API Reference/Tools/Search for or list targeting categories and hashtags for interests and behaviors
+- [Search for targeting hashtags](#1736271339521025) — API Reference/Tools/Search for targeting hashtags
+- [Get targeting hashtags by ID](#1736280889167874) — API Reference/Tools/Get targeting hashtags by ID
+- [Get Search Ads Campaign Health diagnoses](#1848591212970082) — API Reference/Tools/Get Search Ads Campaign Health diagnoses
+- [Get the campaign labels of an ad account](#1851286489283585) — API Reference/Tools/Get the campaign labels of an ad account
+- [Video](#1737587293087810) — API Reference/Video
+- [Upload a video](#1737587322856449) — API Reference/Video/Upload a video
+- [Update the name of a video](#1740049987749890) — API Reference/Video/Update the name of a video
+- [Get info about videos](#1740050161973250) — API Reference/Video/Get info about videos
+- [Search for videos](#1740050472224769) — API Reference/Video/Search for videos
+- [Get suggested thumbnails for a video](#1740051189071873) — API Reference/Video/Get suggested thumbnails for a video
+- [Upgraded Smart+ ad creative combinations by identity and ad type](#1847839781968897) — Appendix/Upgraded Smart+ ad creative combinations by identity and ad type
+- [Available targeting settings for different targeting optimization modes in Upgraded Smart+ Ad Groups](#1847839827327106) — Appendix/Available targeting settings for different targeting optimization modes in Upgraded Smart+ Ad Groups
+- [Available product information settings in Upgraded Smart+ Campaigns](#1860735968798721) — Appendix/Available product information settings in Upgraded Smart+ Campaigns

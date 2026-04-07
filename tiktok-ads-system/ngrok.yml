@@ -1,0 +1,15 @@
+version: "3"
+agent:
+  authtoken: YOUR_NGROK_TOKEN_HERE  # 替换为你的 ngrok token
+
+tunnels:
+  tiktok-ads-backend:
+    proto: http
+    addr: 8000
+    bind_tls: true
+    
+  # 如果需要前端也穿透（可选）
+  # tiktok-ads-frontend:
+  #   proto: http
+  #   addr: 5173
+  #   bind_tls: true
