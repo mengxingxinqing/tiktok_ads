@@ -277,7 +277,7 @@ function creatorType(item) {
   const match = url.match(/@([^/]+)/)
   if (item.is_auto_selected) return { label: '商品卡', name: '', isAffiliate: false }
   if (!url) return { label: '未知', name: '', isAffiliate: false }
-  if (match) return { label: '达人', name: match[1], isAffiliate: true }
+  if (match && match[1] !== '_') return { label: '达人', name: match[1], isAffiliate: true }
   return { label: '官方', name: '', isAffiliate: false }
 }
 

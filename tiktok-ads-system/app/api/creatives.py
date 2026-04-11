@@ -228,7 +228,7 @@ async def list_gmvmax_creatives(
         iid = r.item_id or ""
         oe = oembed_cache.get(iid, {})
         # 视频 URL：直接用 TikTok 帖子链接（可嵌入播放）
-        tiktok_video_url = oe.get("video_url", "") or (f"https://www.tiktok.com/video/{iid}" if iid and iid != "-1" and not r.is_auto_selected else "")
+        tiktok_video_url = oe.get("video_url", "") or (f"https://www.tiktok.com/@_/video/{iid}" if iid and iid != "-1" and not r.is_auto_selected else "")
         items.append({
             "item_id": iid,
             "is_auto_selected": bool(r.is_auto_selected),
