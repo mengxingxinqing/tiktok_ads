@@ -134,6 +134,11 @@
                   </div>
                   <div style="min-width:0;flex:1">
                     <div class="creative-name" :title="creativeName(item)">{{ creativeName(item) }}</div>
+                    <div style="font-size:10px;color:var(--text-muted);display:flex;align-items:center;gap:4px">
+                      <span :class="['badge', creatorType(item).isAffiliate ? 'badge-warning' : 'badge-info']"
+                            style="font-size:9px;padding:1px 4px">{{ creatorType(item).label }}</span>
+                      <span v-if="creatorType(item).name" style="font-weight:500">@{{ creatorType(item).name }}</span>
+                    </div>
                     <div style="font-family:monospace;font-size:10px;color:var(--text-muted)">ID: {{ item.item_id||item.video_id||'-' }}</div>
                   </div>
                 </div>
@@ -265,6 +270,15 @@ function roas(item) {
 
 function creativeName(item) {
   return item.product_name || item.creative_name || item.label || ('创意 #' + (item.item_id || item.video_id || '').slice(-6))
+}
+
+function creatorType(item) {
+  const url = item.tiktok_url || item.video_url || ''
+  const match = url.match(/@([^/]+)/)
+  if (item.is_auto_selected) return { label: '商品卡', name: '', isAffiliate: false }
+  if (!url) return { label: '未知', name: '', isAffiliate: false }
+  if (match) return { label: '达人', name: match[1], isAffiliate: true }
+  return { label: '官方', name: '', isAffiliate: false }
 }
 
 function openPreview(item) {
