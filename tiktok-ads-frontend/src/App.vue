@@ -72,6 +72,7 @@ const navGroups = [
       { path: '/creatives',         icon: '🎬', label: '创意列表' },
       { path: '/creative-manager',  icon: '📤', label: '视频管理' },
       { path: '/creative-dashboard', icon: '📊', label: '状态分布概览' },
+      { path: '/settings',          icon: '⚙️', label: '系统设置' },
     ]
   },
 ]
