@@ -64,18 +64,16 @@
           <button class="btn btn-ghost" style="padding:4px 8px;font-size:16px" @click="previewModal.show=false">✕</button>
         </div>
         <div class="preview-body">
-          <!-- TikTok 视频（新窗口打开） -->
-          <div v-if="previewModal.tiktokUrl" style="text-align:center">
-            <img v-if="previewModal.imageUrl" :src="previewModal.imageUrl"
-                 style="max-width:100%;max-height:50vh;border-radius:8px;object-fit:contain;cursor:pointer"
-                 @click="window.open(previewModal.tiktokUrl, '_blank')" />
-            <div style="margin-top:10px">
-              <a :href="previewModal.tiktokUrl" target="_blank" class="btn btn-primary" style="padding:6px 16px;text-decoration:none;display:inline-flex;align-items:center;gap:6px">
-                ▶ 在 TikTok 观看视频
-              </a>
-            </div>
+          <!-- TikTok 视频内嵌播放 -->
+          <div v-if="previewModal.id && previewModal.id !== '-1'" style="text-align:center">
+            <iframe
+              :src="`https://www.tiktok.com/embed/v2/${previewModal.id}`"
+              style="width:325px;height:580px;border:none;border-radius:12px"
+              allow="encrypted-media"
+              allowfullscreen
+            ></iframe>
           </div>
-          <!-- 仅有商品图 -->
+          <!-- 仅有商品图（自动选品等无视频ID的） -->
           <div v-else-if="previewModal.imageUrl" class="preview-image-wrap">
             <img :src="previewModal.imageUrl" style="max-width:100%;max-height:60vh;border-radius:8px;object-fit:contain" />
           </div>
