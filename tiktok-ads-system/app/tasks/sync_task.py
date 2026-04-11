@@ -702,16 +702,6 @@ async def sync_gmvmax_creatives(
             logger.debug(f"No GMVMax creative data for {advertiser_id}")
             return
 
-        # 删除同日期范围的旧 creative 数据，避免重复
-        stat_dates = list({s.stat_date for s in snapshots})
-        await db.execute(
-            MetricsSnapshot.__table__.delete().where(
-                MetricsSnapshot.advertiser_id == advertiser_id,
-                MetricsSnapshot.data_level == "GMVMAX_CREATIVE",
-                MetricsSnapshot.stat_date.in_(stat_dates),
-            )
-        )
-
         db.add_all(snapshots)
         logger.info(f"Synced {len(snapshots)} GMVMax creative snapshots for {advertiser_id} (stores: {store_ids})")
 
@@ -831,6 +821,19 @@ async def _run_sync_core(start_date: str, end_date: str, label: str):
             return
 
         logger.info(f"Syncing {len(advertisers)} advertisers ({label})...")
+
+        # 清除该日期范围内的旧数据，避免重复
+        sd = datetime.strptime(start_date, "%Y-%m-%d").date()
+        ed = datetime.strptime(end_date, "%Y-%m-%d").date()
+        adv_ids = [adv.advertiser_id for adv in advertisers]
+        await db.execute(
+            MetricsSnapshot.__table__.delete().where(
+                MetricsSnapshot.advertiser_id.in_(adv_ids),
+                MetricsSnapshot.stat_date >= sd,
+                MetricsSnapshot.stat_date <= ed,
+            )
+        )
+        await db.flush()
 
         # 同步店铺信息到 DB（避免后续页面依赖实时 API）
         await _sync_stores(advertisers, db)
