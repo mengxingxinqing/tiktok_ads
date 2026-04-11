@@ -134,7 +134,7 @@
                   </div>
                   <div style="min-width:0;flex:1">
                     <div class="creative-name" :title="creativeName(item)">{{ creativeName(item) }}</div>
-                    <div style="font-family:monospace;font-size:10px;color:var(--text-muted)">{{ (item.item_id||item.video_id||'').slice(-8) }}</div>
+                    <div style="font-family:monospace;font-size:10px;color:var(--text-muted)">ID: {{ item.item_id||item.video_id||'-' }}</div>
                   </div>
                 </div>
               </td>

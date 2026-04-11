@@ -658,6 +658,16 @@ async def sync_gmvmax_creatives(
             logger.debug(f"No GMVMax creative data for {advertiser_id}")
             return
 
+        # 删除同日期范围的旧 creative 数据，避免重复
+        stat_dates = list({s.stat_date for s in snapshots})
+        await db.execute(
+            MetricsSnapshot.__table__.delete().where(
+                MetricsSnapshot.advertiser_id == advertiser_id,
+                MetricsSnapshot.data_level == "GMVMAX_CREATIVE",
+                MetricsSnapshot.stat_date.in_(stat_dates),
+            )
+        )
+
         db.add_all(snapshots)
         logger.info(f"Synced {len(snapshots)} GMVMax creative snapshots for {advertiser_id} (stores: {store_ids})")
 
