@@ -604,52 +604,96 @@ async def sync_gmvmax_creatives(
             logger.debug(f"No GMVMAX_ITEM records for {advertiser_id}, skip creative sync")
             return
 
-        # 4. 逐个 item_group_id 拉取 GMVMax 素材级报表，以建立 item_id → item_group_id 映射
+        # 4. 逐个 item_group_id：
+        #    a) 拉 item_group 级别报表（有 revenue/orders/roi）
+        #    b) 拉 item_id 级别报表（只有 cost/impressions/clicks）
+        #    c) 按 cost 占比将 revenue/orders 分摊到每个 item_id
         snapshots = []
         for ig_id in item_group_ids:
             try:
-                report_data = await client.get_gmvmax_creative_report(
+                # 4a. item_group 级别：获取每天的 revenue/orders
+                ig_report = await client.get_gmvmax_item_report(
                     store_ids=store_ids,
                     campaign_ids=campaign_ids,
-                    item_group_ids=[ig_id],  # 单个 item_group_id，确定归属
                     start_date=start_date,
                     end_date=end_date,
                 )
+                # 构建 {stat_date: {revenue, orders, roi, cost}} 映射
+                ig_daily = {}
+                for row in (ig_report.get("list") or []):
+                    d, m = row.get("dimensions", {}), row.get("metrics", {})
+                    if d.get("item_group_id") != ig_id:
+                        continue
+                    day = d.get("stat_time_day", "")[:10]
+                    ig_daily[day] = {
+                        "revenue": float(m.get("gross_revenue", 0) or 0),
+                        "orders": int(m.get("orders", 0) or 0),
+                        "roi": float(m.get("roi", 0) or 0),
+                        "cost": float(m.get("cost", 0) or 0),
+                    }
 
-                rows = report_data.get("list", [])
+                # 4b. item_id 级别：获取每个视频每天的 cost/impressions/clicks
+                creative_report = await client.get_gmvmax_creative_report(
+                    store_ids=store_ids,
+                    campaign_ids=campaign_ids,
+                    item_group_ids=[ig_id],
+                    start_date=start_date,
+                    end_date=end_date,
+                )
+                rows = creative_report.get("list", [])
                 if not rows:
                     continue
 
+                # 4c. 按 cost 占比分摊 revenue/orders
+                # 先按天分组，计算每天的 total cost
+                daily_items = {}  # {day: [(item_id, campaign_id, cost, impressions, clicks, ctr)]}
                 for row in rows:
                     dims = row.get("dimensions", {})
                     metrics = row.get("metrics", {})
-                    item_id = dims.get("item_id", "")
-                    campaign_id = dims.get("campaign_id", "")
+                    day = dims.get("stat_time_day", "")[:10]
+                    cost = float(metrics.get("cost", 0) or 0)
+                    daily_items.setdefault(day, []).append({
+                        "item_id": dims.get("item_id", ""),
+                        "campaign_id": dims.get("campaign_id", ""),
+                        "cost": cost,
+                        "impressions": int(metrics.get("product_impressions", 0) or 0),
+                        "clicks": int(metrics.get("product_clicks", 0) or 0),
+                        "ctr": float(metrics.get("product_click_rate", 0) or 0),
+                    })
 
-                    snapshot = MetricsSnapshot(
-                        advertiser_id=advertiser_id,
-                        data_level="GMVMAX_CREATIVE",
-                        object_id=str(item_id),
-                        object_name="自动选品" if str(item_id) == "-1" else "",
-                        stat_date=datetime.strptime(
-                            dims.get("stat_time_day", str(today)).split(" ")[0],
-                            "%Y-%m-%d",
-                        ).date(),
-                        snapshot_time=snapshot_time,
-                        campaign_id=campaign_id,
-                        product_id=ig_id,  # 存储父级 item_group_id，用于关联商品信息
+                for day, items in daily_items.items():
+                    ig_info = ig_daily.get(day, {})
+                    ig_revenue = ig_info.get("revenue", 0)
+                    ig_orders = ig_info.get("orders", 0)
+                    total_cost = sum(it["cost"] for it in items)
 
-                        # GMVMax creative metrics
-                        spend=float(metrics.get("cost", 0) or 0),
-                        conversion=int(metrics.get("orders", 0) or 0),
-                        cost_per_conversion=float(metrics.get("cost_per_order", 0) or 0),
-                        gross_revenue=float(metrics.get("gross_revenue", 0) or 0),
-                        roi=float(metrics.get("roi", 0) or 0),
-                        impressions=int(metrics.get("product_impressions", 0) or 0),
-                        clicks=int(metrics.get("product_clicks", 0) or 0),
-                        ctr=float(metrics.get("product_click_rate", 0) or 0),
-                    )
-                    snapshots.append(snapshot)
+                    for it in items:
+                        # 按 cost 占比分摊
+                        ratio = (it["cost"] / total_cost) if total_cost > 0 else 0
+                        allocated_revenue = round(ig_revenue * ratio, 2)
+                        allocated_orders = round(ig_orders * ratio)
+                        item_roi = round(allocated_revenue / it["cost"], 2) if it["cost"] > 0 else 0
+                        cpo = round(it["cost"] / allocated_orders, 2) if allocated_orders > 0 else 0
+
+                        snapshot = MetricsSnapshot(
+                            advertiser_id=advertiser_id,
+                            data_level="GMVMAX_CREATIVE",
+                            object_id=str(it["item_id"]),
+                            object_name="自动选品" if str(it["item_id"]) == "-1" else "",
+                            stat_date=datetime.strptime(day, "%Y-%m-%d").date(),
+                            snapshot_time=snapshot_time,
+                            campaign_id=it["campaign_id"],
+                            product_id=ig_id,
+                            spend=it["cost"],
+                            conversion=allocated_orders,
+                            cost_per_conversion=cpo,
+                            gross_revenue=allocated_revenue,
+                            roi=item_roi,
+                            impressions=it["impressions"],
+                            clicks=it["clicks"],
+                            ctr=it["ctr"],
+                        )
+                        snapshots.append(snapshot)
             except Exception as e:
                 logger.warning(f"GMVMax creative report failed for item_group_id={ig_id}: {e}")
                 continue
