@@ -270,12 +270,31 @@ function creativeName(item) {
   return item.product_name || item.creative_name || item.label || ('创意 #' + (item.item_id || item.video_id || '').slice(-6))
 }
 
+// 统计每个用户名的视频数量，用于区分官方号和达人
+const creatorVideoCounts = computed(() => {
+  const counts = {}
+  for (const c of creatives.value) {
+    const url = c.tiktok_url || c.video_url || ''
+    const m = url.match(/@([^/]+)/)
+    if (m && m[1] !== '_') {
+      counts[m[1]] = (counts[m[1]] || 0) + 1
+    }
+  }
+  return counts
+})
+
 function creatorType(item) {
   const url = item.tiktok_url || item.video_url || ''
   const match = url.match(/@([^/]+)/)
   if (item.is_auto_selected) return { label: '商品卡', name: '', isAffiliate: false }
   if (!url) return { label: '未知', name: '', isAffiliate: false }
-  if (match && match[1] !== '_') return { label: '达人', name: match[1], isAffiliate: true }
+  if (match && match[1] !== '_') {
+    const name = match[1]
+    // 发布 3 个以上视频的账号视为官方渠道号
+    const isOfficial = (creatorVideoCounts.value[name] || 0) >= 3
+    if (isOfficial) return { label: '官方', name, isAffiliate: false }
+    return { label: '达人', name, isAffiliate: true }
+  }
   return { label: '官方', name: '', isAffiliate: false }
 }
 
