@@ -122,30 +122,39 @@ async def build_creative_view(db: AsyncSession, days: int = 60):
     """
     since = date.today() - timedelta(days=days)
 
-    # 1. 聚合 GMVMAX_CREATIVE
+    # 1. 读取 GMVMAX_CREATIVE 汇总记录（每个 item_id 一条）
     result = await db.execute(
         select(
             MetricsSnapshot.object_id.label("item_id"),
             MetricsSnapshot.advertiser_id,
-            func.sum(MetricsSnapshot.spend).label("total_spend"),
-            func.max(MetricsSnapshot.conversion).label("total_orders"),
-            func.sum(MetricsSnapshot.gross_revenue).label("total_revenue"),
-            func.sum(MetricsSnapshot.impressions).label("total_impressions"),
-            func.sum(MetricsSnapshot.clicks).label("total_clicks"),
+            MetricsSnapshot.spend.label("total_spend"),
+            MetricsSnapshot.conversion.label("total_orders"),
+            MetricsSnapshot.gross_revenue.label("total_revenue"),
+            MetricsSnapshot.impressions.label("total_impressions"),
+            MetricsSnapshot.clicks.label("total_clicks"),
+            MetricsSnapshot.product_id.label("item_group_id"),
+            MetricsSnapshot.campaign_id,
+            MetricsSnapshot.object_name.label("obj_name"),
+        )
+        .where(MetricsSnapshot.data_level == "GMVMAX_CREATIVE")
+    )
+    rows = result.all()
+
+    # 从 GMVMAX_CREATIVE_DAILY 获取每日 cost 来计算 active_days/first_seen/last_seen
+    daily_result = await db.execute(
+        select(
+            MetricsSnapshot.object_id.label("item_id"),
             func.count(distinct(MetricsSnapshot.stat_date)).label("active_days"),
             func.min(MetricsSnapshot.stat_date).label("first_seen"),
             func.max(MetricsSnapshot.stat_date).label("last_seen"),
-            func.max(MetricsSnapshot.product_id).label("item_group_id"),
-            func.max(MetricsSnapshot.campaign_id).label("campaign_id"),
-            func.max(MetricsSnapshot.object_name).label("obj_name"),
         )
         .where(and_(
-            MetricsSnapshot.data_level == "GMVMAX_CREATIVE",
-            MetricsSnapshot.stat_date >= since,
+            MetricsSnapshot.data_level == "GMVMAX_CREATIVE_DAILY",
+            MetricsSnapshot.spend > 0,
         ))
-        .group_by(MetricsSnapshot.object_id, MetricsSnapshot.advertiser_id)
+        .group_by(MetricsSnapshot.object_id)
     )
-    rows = result.all()
+    daily_map = {r.item_id: r for r in daily_result.all()}
 
     if not rows:
         logger.debug("[ViewBuilder] No GMVMAX_CREATIVE data, skip creative_view build")
@@ -183,16 +192,19 @@ async def build_creative_view(db: AsyncSession, days: int = 60):
         cv.item_group_id = igid
         cv.advertiser_id = r.advertiser_id
         cv.campaign_id = r.campaign_id or ""
+        orders = int(r.total_orders or 0)
+        daily_info = daily_map.get(item_id)
+
         cv.total_spend = round(spend, 2)
-        cv.total_orders = int(r.total_orders or 0)
+        cv.total_orders = orders
         cv.total_revenue = round(revenue, 2)
         cv.total_impressions = int(r.total_impressions or 0)
         cv.total_clicks = int(r.total_clicks or 0)
         cv.roi = round(revenue / spend, 4) if spend > 0 else 0
-        cv.avg_cost_per_order = round(spend / int(r.total_orders or 1), 2) if int(r.total_orders or 0) > 0 else 0
-        cv.active_days = r.active_days
-        cv.first_seen = r.first_seen
-        cv.last_seen = r.last_seen
+        cv.avg_cost_per_order = round(spend / orders, 2) if orders > 0 else 0
+        cv.active_days = daily_info.active_days if daily_info else 1
+        cv.first_seen = daily_info.first_seen if daily_info else date.today()
+        cv.last_seen = daily_info.last_seen if daily_info else date.today()
 
         # 商品信息
         pv = product_map.get(igid)
@@ -432,15 +444,15 @@ async def _analyze_lifecycle(db: AsyncSession, since: date) -> Dict[str, Dict]:
     """简化版生命周期分析（复用 creatives.py 的逻辑）"""
     from collections import defaultdict
 
+    # 从 GMVMAX_CREATIVE_DAILY 读每日 cost（生命周期判断用）
     result = await db.execute(
         select(
             MetricsSnapshot.object_id,
             MetricsSnapshot.stat_date,
             MetricsSnapshot.spend,
-            MetricsSnapshot.conversion,
         )
         .where(and_(
-            MetricsSnapshot.data_level == "GMVMAX_CREATIVE",
+            MetricsSnapshot.data_level == "GMVMAX_CREATIVE_DAILY",
             MetricsSnapshot.stat_date >= since,
             MetricsSnapshot.object_id != "-1",
         ))
@@ -452,8 +464,14 @@ async def _analyze_lifecycle(db: AsyncSession, since: date) -> Dict[str, Dict]:
         daily_data[r.object_id].append({
             "date": r.stat_date,
             "spend": float(r.spend or 0),
-            "orders": int(r.conversion or 0),
         })
+
+    # 从 GMVMAX_CREATIVE 汇总记录读 orders（用于判断有无转化）
+    orders_result = await db.execute(
+        select(MetricsSnapshot.object_id, MetricsSnapshot.conversion)
+        .where(MetricsSnapshot.data_level == "GMVMAX_CREATIVE")
+    )
+    orders_map = {r.object_id: int(r.conversion or 0) for r in orders_result.all()}
 
     today = date.today()
     lifecycle = {}
@@ -461,7 +479,7 @@ async def _analyze_lifecycle(db: AsyncSession, since: date) -> Dict[str, Dict]:
     for item_id, days_data in daily_data.items():
         spends = [d["spend"] for d in days_data]
         total_spend = sum(spends)
-        total_orders = sum(d["orders"] for d in days_data)
+        total_orders = orders_map.get(item_id, 0)
         active_days = len([s for s in spends if s > 0])
         dates = [d["date"] for d in days_data]
         last_date = max(dates) if dates else today
