@@ -605,121 +605,142 @@ async def sync_gmvmax_creatives(
             return
 
         # 4. 逐个 item_group_id：
-        #    a) 拉 item_group 级别报表（有 revenue/orders/roi）
-        #    b) 拉 item_id 级别报表（只有 cost/impressions/clicks）
-        #    c) 按 cost 占比将 revenue/orders 分摊到每个 item_id
+        #    a) 不带日期维度拉 item_id 汇总报表（有真实 revenue/orders/roi）
+        #    b) 带日期维度拉 item_id 每日明细（有 cost/impressions/clicks，但 revenue=0）
+        #    c) 合并：每日明细用汇总的 revenue/orders/roi，按 cost 占比分摊到每天
         snapshots = []
         for ig_id in item_group_ids:
             try:
-                # 4a. item_group 级别：获取每天的 revenue/orders
-                ig_rows = []
-                ig_page = 1
+                # 4a. 汇总报表（不带 stat_time_day）：获取每个 item_id 的真实 revenue/orders/roi
+                summary_rows = []
+                s_page = 1
                 while True:
-                    ig_report = await client.get_gmvmax_item_report(
-                        store_ids=store_ids,
-                        campaign_ids=campaign_ids,
-                        start_date=start_date,
-                        end_date=end_date,
-                        page=ig_page,
-                        page_size=200,
+                    summary = await client.get_gmvmax_report(
+                        store_ids, start_date, end_date,
+                        dimensions=["campaign_id", "item_id"],
+                        metrics=["cost", "gross_revenue", "orders", "roi", "cost_per_order",
+                                 "product_impressions", "product_clicks", "product_click_rate"],
+                        filtering={"campaign_ids": campaign_ids, "item_group_ids": [ig_id]},
+                        page=s_page, page_size=200,
                     )
-                    page_rows = ig_report.get("list", [])
+                    page_rows = summary.get("list", [])
                     if not page_rows:
                         break
-                    ig_rows.extend(page_rows)
-                    total_page = ig_report.get("page_info", {}).get("total_page", 1)
-                    if ig_page >= total_page:
+                    summary_rows.extend(page_rows)
+                    if s_page >= summary.get("page_info", {}).get("total_page", 1):
                         break
-                    ig_page += 1
+                    s_page += 1
 
-                # 构建 {stat_date: {revenue, orders, roi, cost}} 映射
-                ig_daily = {}
-                for row in ig_rows:
+                # 构建 item_id → {revenue, orders, roi, cost, ...} 汇总映射
+                item_summary = {}
+                for row in summary_rows:
                     d, m = row.get("dimensions", {}), row.get("metrics", {})
-                    if d.get("item_group_id") != ig_id:
-                        continue
-                    day = d.get("stat_time_day", "")[:10]
-                    ig_daily[day] = {
+                    item_id = str(d.get("item_id", ""))
+                    item_summary[item_id] = {
+                        "campaign_id": d.get("campaign_id", ""),
+                        "cost": float(m.get("cost", 0) or 0),
                         "revenue": float(m.get("gross_revenue", 0) or 0),
                         "orders": int(m.get("orders", 0) or 0),
                         "roi": float(m.get("roi", 0) or 0),
-                        "cost": float(m.get("cost", 0) or 0),
+                        "cpo": float(m.get("cost_per_order", 0) or 0),
+                        "impressions": int(m.get("product_impressions", 0) or 0),
+                        "clicks": int(m.get("product_clicks", 0) or 0),
+                        "ctr": float(m.get("product_click_rate", 0) or 0),
                     }
 
-                # 4b. item_id 级别：获取每个视频每天的 cost/impressions/clicks（自动翻页）
-                rows = []
-                page = 1
+                if not item_summary:
+                    continue
+
+                # 4b. 每日明细（带 stat_time_day）：获取每天的 cost/impressions/clicks
+                daily_rows = []
+                d_page = 1
                 while True:
-                    creative_report = await client.get_gmvmax_creative_report(
+                    daily = await client.get_gmvmax_creative_report(
                         store_ids=store_ids,
                         campaign_ids=campaign_ids,
                         item_group_ids=[ig_id],
                         start_date=start_date,
                         end_date=end_date,
-                        page=page,
-                        page_size=200,
+                        page=d_page, page_size=200,
                     )
-                    page_rows = creative_report.get("list", [])
+                    page_rows = daily.get("list", [])
                     if not page_rows:
                         break
-                    rows.extend(page_rows)
-                    page_info = creative_report.get("page_info", {})
-                    total_page = page_info.get("total_page", 1)
-                    if page >= total_page:
+                    daily_rows.extend(page_rows)
+                    if d_page >= daily.get("page_info", {}).get("total_page", 1):
                         break
-                    page += 1
+                    d_page += 1
 
-                if not rows:
+                if not daily_rows:
+                    # 没有每日明细，用汇总数据写一条（stat_date 为 end_date）
+                    for item_id, s in item_summary.items():
+                        snapshot = MetricsSnapshot(
+                            advertiser_id=advertiser_id,
+                            data_level="GMVMAX_CREATIVE",
+                            object_id=item_id,
+                            object_name="自动选品" if item_id == "-1" else "",
+                            stat_date=datetime.strptime(end_date, "%Y-%m-%d").date(),
+                            snapshot_time=snapshot_time,
+                            campaign_id=s["campaign_id"],
+                            product_id=ig_id,
+                            spend=s["cost"], gross_revenue=s["revenue"],
+                            conversion=s["orders"], roi=s["roi"],
+                            cost_per_conversion=s["cpo"],
+                            impressions=s["impressions"], clicks=s["clicks"], ctr=s["ctr"],
+                        )
+                        snapshots.append(snapshot)
                     continue
 
-                # 4c. 按 cost 占比分摊 revenue/orders
-                # 先按天分组，计算每天的 total cost
-                daily_items = {}  # {day: [(item_id, campaign_id, cost, impressions, clicks, ctr)]}
-                for row in rows:
+                # 4c. 合并：每日明细 + 汇总的 revenue/orders 按每日 cost 占比分摊
+                # 按 item_id 分组每日 cost
+                item_daily_costs = {}  # {item_id: {day: cost}}
+                item_daily_detail = {}  # {item_id: {day: {cost, impressions, clicks, ctr, campaign_id}}}
+                for row in daily_rows:
                     dims = row.get("dimensions", {})
                     metrics = row.get("metrics", {})
+                    item_id = str(dims.get("item_id", ""))
                     day = dims.get("stat_time_day", "")[:10]
                     cost = float(metrics.get("cost", 0) or 0)
-                    daily_items.setdefault(day, []).append({
-                        "item_id": dims.get("item_id", ""),
-                        "campaign_id": dims.get("campaign_id", ""),
+                    item_daily_costs.setdefault(item_id, {})[day] = cost
+                    item_daily_detail.setdefault(item_id, {})[day] = {
                         "cost": cost,
+                        "campaign_id": dims.get("campaign_id", ""),
                         "impressions": int(metrics.get("product_impressions", 0) or 0),
                         "clicks": int(metrics.get("product_clicks", 0) or 0),
                         "ctr": float(metrics.get("product_click_rate", 0) or 0),
-                    })
+                    }
 
-                for day, items in daily_items.items():
-                    ig_info = ig_daily.get(day, {})
-                    ig_revenue = ig_info.get("revenue", 0)
-                    ig_orders = ig_info.get("orders", 0)
-                    total_cost = sum(it["cost"] for it in items)
+                for item_id, daily_map in item_daily_detail.items():
+                    s = item_summary.get(item_id, {})
+                    total_revenue = s.get("revenue", 0)
+                    total_orders = s.get("orders", 0)
+                    total_cost = s.get("cost", 0)
 
-                    for it in items:
-                        # 按 cost 占比分摊
-                        ratio = (it["cost"] / total_cost) if total_cost > 0 else 0
-                        allocated_revenue = round(ig_revenue * ratio, 2)
-                        allocated_orders = round(ig_orders * ratio)
-                        item_roi = round(allocated_revenue / it["cost"], 2) if it["cost"] > 0 else 0
-                        cpo = round(it["cost"] / allocated_orders, 2) if allocated_orders > 0 else 0
+                    for day, detail in daily_map.items():
+                        # 按当日 cost 占该 item 总 cost 的比例分摊 revenue/orders
+                        ratio = (detail["cost"] / total_cost) if total_cost > 0 else 0
+                        day_revenue = round(total_revenue * ratio, 2)
+                        day_orders = round(total_orders * ratio)
+                        day_roi = round(day_revenue / detail["cost"], 2) if detail["cost"] > 0 else 0
+                        day_cpo = round(detail["cost"] / day_orders, 2) if day_orders > 0 else 0
 
                         snapshot = MetricsSnapshot(
                             advertiser_id=advertiser_id,
                             data_level="GMVMAX_CREATIVE",
-                            object_id=str(it["item_id"]),
-                            object_name="自动选品" if str(it["item_id"]) == "-1" else "",
+                            object_id=item_id,
+                            object_name="自动选品" if item_id == "-1" else "",
                             stat_date=datetime.strptime(day, "%Y-%m-%d").date(),
                             snapshot_time=snapshot_time,
-                            campaign_id=it["campaign_id"],
+                            campaign_id=detail["campaign_id"],
                             product_id=ig_id,
-                            spend=it["cost"],
-                            conversion=allocated_orders,
-                            cost_per_conversion=cpo,
-                            gross_revenue=allocated_revenue,
-                            roi=item_roi,
-                            impressions=it["impressions"],
-                            clicks=it["clicks"],
-                            ctr=it["ctr"],
+                            spend=detail["cost"],
+                            gross_revenue=day_revenue,
+                            conversion=day_orders,
+                            roi=day_roi,
+                            cost_per_conversion=day_cpo,
+                            impressions=detail["impressions"],
+                            clicks=detail["clicks"],
+                            ctr=detail["ctr"],
                         )
                         snapshots.append(snapshot)
             except Exception as e:
