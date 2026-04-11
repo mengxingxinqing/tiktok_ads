@@ -167,6 +167,7 @@
                       style="cursor:help">
                   {{ stageLabelMap[item.stage]||item.stage||'—' }}
                 </span>
+                <div style="font-size:11px;color:var(--text-muted);margin-top:2px">{{ item.active_days||0 }}天</div>
               </td>
               <!-- 操作 -->
               <td>
