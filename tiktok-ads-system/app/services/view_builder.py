@@ -128,7 +128,7 @@ async def build_creative_view(db: AsyncSession, days: int = 60):
             MetricsSnapshot.object_id.label("item_id"),
             MetricsSnapshot.advertiser_id,
             func.sum(MetricsSnapshot.spend).label("total_spend"),
-            func.sum(MetricsSnapshot.conversion).label("total_orders"),
+            func.max(MetricsSnapshot.conversion).label("total_orders"),
             func.sum(MetricsSnapshot.gross_revenue).label("total_revenue"),
             func.sum(MetricsSnapshot.impressions).label("total_impressions"),
             func.sum(MetricsSnapshot.clicks).label("total_clicks"),
