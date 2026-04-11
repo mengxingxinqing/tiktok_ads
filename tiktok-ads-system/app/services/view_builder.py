@@ -474,8 +474,15 @@ async def _analyze_lifecycle(db: AsyncSession, since: date) -> Dict[str, Dict]:
         trend = "up" if trend_ratio > 1.2 else ("down" if trend_ratio < 0.8 else "stable")
         daily_avg = total_spend / max(active_days, 1)
 
-        if days_since_last >= 3:
+        # 最近几天的花费（用于判断是否停投）
+        recent_spends = spends[-2:] if len(spends) >= 2 else spends
+        last_day_spend = spends[-1] if spends else 0
+
+        if days_since_last >= 2:
             stage, rec, reason = "DEAD", "drop", f"已{days_since_last}天无花费"
+        elif last_day_spend == 0 and total_spend > 1 and len(spends) >= 2:
+            # 之前有花费但最近一天为 0 → 可能被停投/排除
+            stage, rec, reason = "DEAD", "drop", "最近无花费，可能已停投"
         elif active_days <= 2 and total_spend < 0.5:
             stage, rec, reason = "WARM_UP", "observe", "冷启动阶段"
         elif active_days >= 5 and total_orders == 0 and trend == "down":
