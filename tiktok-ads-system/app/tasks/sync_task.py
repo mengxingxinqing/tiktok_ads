@@ -715,14 +715,13 @@ async def sync_gmvmax_creatives(
                     total_revenue = s.get("revenue", 0)
                     total_orders = s.get("orders", 0)
                     total_cost = s.get("cost", 0)
+                    item_roi = s.get("roi", 0)
+                    item_cpo = s.get("cpo", 0)
 
                     for day, detail in daily_map.items():
-                        # 按当日 cost 占该 item 总 cost 的比例分摊 revenue/orders
+                        # revenue 按当日 cost 占比分摊到每天；orders/roi/cpo 用汇总原始值
                         ratio = (detail["cost"] / total_cost) if total_cost > 0 else 0
                         day_revenue = round(total_revenue * ratio, 2)
-                        day_orders = round(total_orders * ratio)
-                        day_roi = round(day_revenue / detail["cost"], 2) if detail["cost"] > 0 else 0
-                        day_cpo = round(detail["cost"] / day_orders, 2) if day_orders > 0 else 0
 
                         snapshot = MetricsSnapshot(
                             advertiser_id=advertiser_id,
@@ -735,9 +734,9 @@ async def sync_gmvmax_creatives(
                             product_id=ig_id,
                             spend=detail["cost"],
                             gross_revenue=day_revenue,
-                            conversion=day_orders,
-                            roi=day_roi,
-                            cost_per_conversion=day_cpo,
+                            conversion=total_orders,  # 原始订单数，不分摊
+                            roi=item_roi,  # 原始 ROI
+                            cost_per_conversion=item_cpo,  # 原始 CPO
                             impressions=detail["impressions"],
                             clicks=detail["clicks"],
                             ctr=detail["ctr"],
