@@ -781,20 +781,26 @@ async def _run_sync_core(start_date: str, end_date: str, label: str):
         # 同步店铺信息到 DB（避免后续页面依赖实时 API）
         await _sync_stores(advertisers, db)
 
-        # 同步 GMVMax 数据（Campaign 级 + 商品组级 + 素材级）
+        # 同步 GMVMax 数据（Campaign → Item → Creative 按顺序执行，creative 依赖前两者的数据库记录）
         gmvmax_tasks = [
             sync_gmvmax(adv.advertiser_id, adv.access_token, db, start_date, end_date)
             for adv in advertisers
         ]
+        await asyncio.gather(*gmvmax_tasks, return_exceptions=True)
+        await db.flush()
+
         gmvmax_item_tasks = [
             sync_gmvmax_items(adv.advertiser_id, adv.access_token, db, start_date, end_date)
             for adv in advertisers
         ]
+        await asyncio.gather(*gmvmax_item_tasks, return_exceptions=True)
+        await db.flush()
+
         gmvmax_creative_tasks = [
             sync_gmvmax_creatives(adv.advertiser_id, adv.access_token, db, start_date, end_date)
             for adv in advertisers
         ]
-        await asyncio.gather(*gmvmax_tasks, *gmvmax_item_tasks, *gmvmax_creative_tasks, return_exceptions=True)
+        await asyncio.gather(*gmvmax_creative_tasks, return_exceptions=True)
 
         # 同步视频素材数据（Ad 级 → video_id 聚合，含视频封面/预览URL）
         creative_tasks = [
