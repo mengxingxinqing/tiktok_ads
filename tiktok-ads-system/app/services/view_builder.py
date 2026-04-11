@@ -481,8 +481,9 @@ async def _analyze_lifecycle(db: AsyncSession, since: date) -> Dict[str, Dict]:
         total_spend = sum(spends)
         total_orders = orders_map.get(item_id, 0)
         active_days = len([s for s in spends if s > 0])
-        dates = [d["date"] for d in days_data]
-        last_date = max(dates) if dates else today
+        # 最后有花费的日期（忽略 spend=0 的记录）
+        active_dates = [d["date"] for d in days_data if d["spend"] > 0]
+        last_date = max(active_dates) if active_dates else (max(d["date"] for d in days_data) if days_data else today)
         days_since_last = (today - last_date).days
 
         mid = len(spends) // 2 if len(spends) > 1 else 1
@@ -514,8 +515,8 @@ async def _analyze_lifecycle(db: AsyncSession, since: date) -> Dict[str, Dict]:
         else:
             stage, rec, reason = "WARM_UP", "observe", "数据积累中"
 
-        if total_orders > 0:
-            if stage in ("FATIGUE", "DEAD"):
+        if total_orders > 0 and stage != "DEAD":
+            if stage == "FATIGUE":
                 stage = "DECAY"
             rec = "boost" if trend != "down" else "observe"
             reason = f"有{total_orders}笔转化! " + reason
