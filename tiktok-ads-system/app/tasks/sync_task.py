@@ -612,15 +612,29 @@ async def sync_gmvmax_creatives(
         for ig_id in item_group_ids:
             try:
                 # 4a. item_group 级别：获取每天的 revenue/orders
-                ig_report = await client.get_gmvmax_item_report(
-                    store_ids=store_ids,
-                    campaign_ids=campaign_ids,
-                    start_date=start_date,
-                    end_date=end_date,
-                )
+                ig_rows = []
+                ig_page = 1
+                while True:
+                    ig_report = await client.get_gmvmax_item_report(
+                        store_ids=store_ids,
+                        campaign_ids=campaign_ids,
+                        start_date=start_date,
+                        end_date=end_date,
+                        page=ig_page,
+                        page_size=200,
+                    )
+                    page_rows = ig_report.get("list", [])
+                    if not page_rows:
+                        break
+                    ig_rows.extend(page_rows)
+                    total_page = ig_report.get("page_info", {}).get("total_page", 1)
+                    if ig_page >= total_page:
+                        break
+                    ig_page += 1
+
                 # 构建 {stat_date: {revenue, orders, roi, cost}} 映射
                 ig_daily = {}
-                for row in (ig_report.get("list") or []):
+                for row in ig_rows:
                     d, m = row.get("dimensions", {}), row.get("metrics", {})
                     if d.get("item_group_id") != ig_id:
                         continue
@@ -632,15 +646,29 @@ async def sync_gmvmax_creatives(
                         "cost": float(m.get("cost", 0) or 0),
                     }
 
-                # 4b. item_id 级别：获取每个视频每天的 cost/impressions/clicks
-                creative_report = await client.get_gmvmax_creative_report(
-                    store_ids=store_ids,
-                    campaign_ids=campaign_ids,
-                    item_group_ids=[ig_id],
-                    start_date=start_date,
-                    end_date=end_date,
-                )
-                rows = creative_report.get("list", [])
+                # 4b. item_id 级别：获取每个视频每天的 cost/impressions/clicks（自动翻页）
+                rows = []
+                page = 1
+                while True:
+                    creative_report = await client.get_gmvmax_creative_report(
+                        store_ids=store_ids,
+                        campaign_ids=campaign_ids,
+                        item_group_ids=[ig_id],
+                        start_date=start_date,
+                        end_date=end_date,
+                        page=page,
+                        page_size=200,
+                    )
+                    page_rows = creative_report.get("list", [])
+                    if not page_rows:
+                        break
+                    rows.extend(page_rows)
+                    page_info = creative_report.get("page_info", {})
+                    total_page = page_info.get("total_page", 1)
+                    if page >= total_page:
+                        break
+                    page += 1
+
                 if not rows:
                     continue
 
