@@ -83,3 +83,38 @@ input, select {
   font-size: 13px; outline: none;
 }
 input:focus, select:focus { border-color: var(--primary); }
+
+/* 表格横向滚动容器 */
+.table-wrap { width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+
+/* ==== 移动端 ≤768px ==== */
+@media (max-width: 768px) {
+  body { font-size: 13px; }
+
+  .page { padding: 12px; }
+  .page-header { flex-wrap: wrap; gap: 8px; margin-bottom: 16px; }
+  .page-title { font-size: 17px; }
+  .page-subtitle { font-size: 12px; }
+
+  .card { padding: 12px; border-radius: 8px; }
+
+  .btn { padding: 6px 10px; font-size: 12px; }
+
+  .stat-value { font-size: 22px; }
+  .stat-label { font-size: 11px; }
+
+  table { min-width: 640px; }
+  th, td { padding: 8px 10px; font-size: 12px; }
+
+  /* 表格所在卡片允许横向滚动 */
+  .card:has(table) { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+
+  /* 弹窗 */
+  .modal { max-width: 95vw !important; }
+  .modal-overlay { padding: 10px; }
+
+  input, select { font-size: 14px; padding: 8px 10px; } /* iOS 避免 zoom */
+
+  .empty-state { padding: 24px; }
+  .empty-icon { font-size: 36px; }
+}

@@ -1,5 +1,20 @@
 <template>
-  <div class="layout">
+  <div class="layout" :class="{ 'sidebar-open': sidebarOpen }">
+    <!-- 移动端顶栏 -->
+    <header class="mobile-topbar">
+      <button class="menu-btn" @click="sidebarOpen = !sidebarOpen" aria-label="菜单">
+        <span>{{ sidebarOpen ? '✕' : '☰' }}</span>
+      </button>
+      <div class="mobile-logo">
+        <span class="logo-icon">🎯</span>
+        <span>TikTok Ads</span>
+      </div>
+      <span :class="['status-dot', systemOnline ? 'online' : 'offline']"></span>
+    </header>
+
+    <!-- 遮罩（移动端） -->
+    <div v-if="sidebarOpen" class="sidebar-overlay" @click="sidebarOpen = false"></div>
+
     <!-- 侧边栏 -->
     <nav class="sidebar">
       <div class="sidebar-logo">
@@ -23,6 +38,7 @@
             :key="item.path"
             :to="item.path"
             class="nav-item"
+            @click="sidebarOpen = false"
           >
             <span class="nav-icon">{{ item.icon }}</span>
             <span>{{ item.label }}</span>
@@ -54,6 +70,7 @@ import { useGlobalFilterStore } from './stores/globalFilter'
 const systemOnline = ref(false)
 const pendingDecisions = ref(0)
 const unresolved = ref(0)
+const sidebarOpen = ref(false)
 
 const globalFilterStore = useGlobalFilterStore()
 const globalShopId = ref('')
@@ -114,6 +131,26 @@ onMounted(async () => {
 
 <style scoped>
 .layout { display: flex; height: 100vh; overflow: hidden; }
+
+/* 移动端顶栏，默认隐藏 */
+.mobile-topbar {
+  display: none;
+  position: fixed; top: 0; left: 0; right: 0;
+  height: 48px; z-index: 100;
+  background: var(--bg-card);
+  border-bottom: 1px solid var(--border);
+  align-items: center; padding: 0 12px; gap: 12px;
+}
+.menu-btn {
+  background: transparent; border: none; color: var(--text);
+  font-size: 20px; width: 32px; height: 32px; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+}
+.mobile-logo { display: flex; align-items: center; gap: 8px; font-weight: 700; font-size: 15px; flex: 1; }
+.sidebar-overlay {
+  display: none; position: fixed; inset: 0;
+  background: rgba(0,0,0,0.5); z-index: 90;
+}
 
 .sidebar {
   width: 220px; flex-shrink: 0;
@@ -189,4 +226,26 @@ onMounted(async () => {
 .status-dot.offline { background: var(--danger); }
 
 .main-content { flex: 1; overflow-y: auto; }
+
+/* ==== 移动端 ≤768px ==== */
+@media (max-width: 768px) {
+  .mobile-topbar { display: flex; }
+  .sidebar-overlay { display: block; }
+
+  .layout { padding-top: 48px; }
+
+  .sidebar {
+    position: fixed; top: 48px; bottom: 0; left: 0;
+    width: 240px; z-index: 95;
+    transform: translateX(-100%);
+    transition: transform 0.25s ease;
+  }
+  .layout.sidebar-open .sidebar { transform: translateX(0); }
+  .layout.sidebar-open .sidebar-overlay { display: block; }
+  .layout:not(.sidebar-open) .sidebar-overlay { display: none; }
+
+  .sidebar-logo { display: none; }
+
+  .main-content { width: 100%; }
+}
 </style>
