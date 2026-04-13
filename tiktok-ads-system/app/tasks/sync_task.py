@@ -184,20 +184,14 @@ async def sync_gmvmax(
     snapshot_time = datetime.now(timezone.utc)
 
     try:
-        # 1. 获取关联店铺
-        stores = await client.get_gmvmax_store_list()
-        if not stores:
+        # 1. 获取关联店铺（合并 API 返回和 DB 已存）
+        store_ids = await _get_active_store_ids(advertiser_id, client, db)
+        if not store_ids:
             logger.debug(f"No stores linked to {advertiser_id}, skip GMVMax sync")
             return
 
-        store_ids = []
-        for s in stores:
-            sid = s.get("store_id") or s.get("shop_id") or s.get("id")
-            if sid:
-                store_ids.append(str(sid))
-
-        if not store_ids:
-            return
+        # 取 stores 列表用于 campaign name 查询
+        stores_api = await client.get_gmvmax_store_list() or []
 
         # 2. 每个 store 单独拉取 GMVMax 报表（API 限制 store_ids 最多 1 个）
         rows = []  # [(row_dict, store_id)]
@@ -227,7 +221,7 @@ async def sync_gmvmax(
                     camp_data = await client._request("GET", "/open_api/v1.3/gmv_max/campaign/get/", params={
                         "advertiser_id": advertiser_id,
                         "store_id": store_ids[0] if store_ids else "",
-                        "store_authorized_bc_id": stores[0].get("store_authorized_bc_id", "") if stores else "",
+                        "store_authorized_bc_id": stores_api[0].get("store_authorized_bc_id", "") if stores_api else "",
                         "filtering": _json.dumps({"gmv_max_promotion_types": [promo_type]}),
                         "page": page,
                         "page_size": 100,
@@ -463,19 +457,10 @@ async def sync_gmvmax_items(
     snapshot_time = datetime.now(timezone.utc)
 
     try:
-        # 1. 获取关联店铺
-        stores = await client.get_gmvmax_store_list()
-        if not stores:
-            logger.debug(f"No stores linked to {advertiser_id}, skip GMVMax item sync")
-            return
-
-        store_ids = []
-        for s in stores:
-            sid = s.get("store_id") or s.get("shop_id") or s.get("id")
-            if sid:
-                store_ids.append(str(sid))
-
+        # 1. 获取关联店铺（合并 API + DB）
+        store_ids = await _get_active_store_ids(advertiser_id, client, db)
         if not store_ids:
+            logger.debug(f"No stores linked to {advertiser_id}, skip GMVMax item sync")
             return
 
         # 2. 从数据库获取该广告主已有的 GMVMAX_CAMPAIGN campaign_ids
@@ -573,19 +558,10 @@ async def sync_gmvmax_creatives(
     snapshot_time = datetime.now(timezone.utc)
 
     try:
-        # 1. 获取关联店铺
-        stores = await client.get_gmvmax_store_list()
-        if not stores:
-            logger.debug(f"No stores linked to {advertiser_id}, skip GMVMax creative sync")
-            return
-
-        store_ids = []
-        for s in stores:
-            sid = s.get("store_id") or s.get("shop_id") or s.get("id")
-            if sid:
-                store_ids.append(str(sid))
-
+        # 1. 获取关联店铺（合并 API + DB）
+        store_ids = await _get_active_store_ids(advertiser_id, client, db)
         if not store_ids:
+            logger.debug(f"No stores linked to {advertiser_id}, skip GMVMax creative sync")
             return
 
         # 2. 从数据库获取该广告主已有的 GMVMAX_CAMPAIGN campaign_ids
@@ -788,19 +764,22 @@ async def run_detection_and_decision():
 
 
 async def _sync_stores(advertisers, db):
-    """同步所有广告主关联的店铺信息到 stores 表；API 不再返回的 store 标记为 inactive"""
+    """同步所有广告主关联的店铺信息到 stores 表。
+
+    策略：
+    - TikTok 的 /gmv_max/store/list/ 接口有时会漏返回已授权的 store，
+      但 /gmv_max/report/ 仍能拉到数据。因此不以 store 列表为准判定失效。
+    - 只 upsert API 返回的 store，已存在但 API 不返回的 store 保持不变。
+    """
     from app.models.store import Store
     for adv in advertisers:
         client = TikTokClient(access_token=adv.access_token, advertiser_id=adv.advertiser_id)
         try:
             stores = await client.get_gmvmax_store_list()
-            live_ids = set()
             for s in (stores or []):
                 store_id = str(s.get("store_id") or s.get("shop_id") or "")
                 if not store_id:
                     continue
-                live_ids.add(store_id)
-                # Upsert
                 existing = await db.execute(select(Store).where(Store.store_id == store_id))
                 store = existing.scalar_one_or_none()
                 region_codes = s.get("targeting_region_codes", [])
@@ -816,19 +795,6 @@ async def _sync_stores(advertisers, db):
                 store.targeting_region_codes = region_codes
                 store.is_active = True
                 store.last_synced_at = datetime.now(timezone.utc)
-
-            # 将该广告主下 API 不再返回的 store 标记为 inactive（权限已撤销）
-            stale_result = await db.execute(
-                select(Store).where(
-                    Store.advertiser_id == adv.advertiser_id,
-                    Store.is_active == True,
-                )
-            )
-            for stale in stale_result.scalars().all():
-                if stale.store_id not in live_ids:
-                    stale.is_active = False
-                    logger.info(f"[Store Sync] Marked inactive: {stale.store_id} ({stale.store_name})")
-
             await db.flush()
             if stores:
                 logger.info(f"[Store Sync] {adv.advertiser_id}: synced {len(stores)} store(s)")
@@ -836,6 +802,37 @@ async def _sync_stores(advertisers, db):
             logger.warning(f"[Store Sync] {adv.advertiser_id} failed: {e}")
         finally:
             await client.close()
+
+
+async def _get_active_store_ids(advertiser_id: str, client: TikTokClient, db: AsyncSession) -> List[str]:
+    """获取该广告主所有可用的 store_id。
+
+    合并两个数据源：
+    1. /gmv_max/store/list/ API 返回的 store
+    2. 数据库中已存的该广告主的 active store（API 有时漏返回）
+    """
+    from app.models.store import Store
+    ids = set()
+    try:
+        stores = await client.get_gmvmax_store_list()
+        for s in (stores or []):
+            sid = str(s.get("store_id") or s.get("shop_id") or "")
+            if sid:
+                ids.add(sid)
+    except Exception:
+        pass
+
+    # 补充：数据库已记录的该广告主 active store
+    db_result = await db.execute(
+        select(Store.store_id).where(
+            Store.advertiser_id == advertiser_id,
+            Store.is_active == True,
+        )
+    )
+    for (sid,) in db_result.all():
+        if sid:
+            ids.add(sid)
+    return list(ids)
 
 
 async def _run_sync_core(start_date: str, end_date: str, label: str):
