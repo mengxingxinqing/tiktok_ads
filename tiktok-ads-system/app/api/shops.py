@@ -88,14 +88,14 @@ async def list_shops(
         bc_id = store.store_authorized_bc_id or ""
         adv_id = store.advertiser_id or ""
 
-        # --- 聚合 GMVMAX_CAMPAIGN 指标 ---
+        # --- 聚合 GMVMAX_CAMPAIGN 指标（按 store_id 过滤，避免跨店混算）---
         campaign_result = await db.execute(
             select(
                 func.coalesce(func.sum(MetricsSnapshot.spend), 0.0).label("total_spend"),
                 func.coalesce(func.sum(MetricsSnapshot.conversion), 0).label("total_orders"),
                 func.coalesce(func.sum(MetricsSnapshot.gross_revenue), 0.0).label("total_revenue"),
             ).where(and_(
-                MetricsSnapshot.advertiser_id == adv_id,
+                MetricsSnapshot.store_id == store_id,
                 MetricsSnapshot.data_level == "GMVMAX_CAMPAIGN",
                 MetricsSnapshot.stat_date >= since,
             ))
@@ -108,7 +108,7 @@ async def list_shops(
         # --- 聚合 GMVMAX_ITEM 指标 ---
         item_result = await db.execute(
             select(func.count(distinct(MetricsSnapshot.object_id)).label("n")).where(and_(
-                MetricsSnapshot.advertiser_id == adv_id,
+                MetricsSnapshot.store_id == store_id,
                 MetricsSnapshot.data_level == "GMVMAX_ITEM",
                 MetricsSnapshot.stat_date >= since,
             ))
@@ -122,7 +122,7 @@ async def list_shops(
                 func.coalesce(func.sum(MetricsSnapshot.impressions), 0).label("total_impressions"),
                 func.coalesce(func.sum(MetricsSnapshot.clicks), 0).label("total_clicks"),
             ).where(and_(
-                MetricsSnapshot.advertiser_id == adv_id,
+                MetricsSnapshot.store_id == store_id,
                 MetricsSnapshot.data_level == "GMVMAX_CREATIVE",
                 MetricsSnapshot.stat_date >= since,
             ))
