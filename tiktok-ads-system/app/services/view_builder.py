@@ -122,7 +122,7 @@ async def build_creative_view(db: AsyncSession, days: int = 60):
     """
     since = date.today() - timedelta(days=days)
 
-    # 1. 读取 GMVMAX_CREATIVE 汇总记录（每个 item_id 一条）
+    # 1. 读取 GMVMAX_CREATIVE 汇总记录（每个 item_id + store_id 一条）
     result = await db.execute(
         select(
             MetricsSnapshot.object_id.label("item_id"),
@@ -134,6 +134,7 @@ async def build_creative_view(db: AsyncSession, days: int = 60):
             MetricsSnapshot.clicks.label("total_clicks"),
             MetricsSnapshot.product_id.label("item_group_id"),
             MetricsSnapshot.campaign_id,
+            MetricsSnapshot.store_id,
             MetricsSnapshot.object_name.label("obj_name"),
         )
         .where(MetricsSnapshot.data_level == "GMVMAX_CREATIVE")
@@ -176,22 +177,27 @@ async def build_creative_view(db: AsyncSession, days: int = 60):
     # 5. UPSERT
     count = 0
     for r in rows:
-        item_id = r.item_id
+        orig_item_id = r.item_id
+        store_id = r.store_id or ""
         spend = float(r.total_spend or 0)
         revenue = float(r.total_revenue or 0)
         igid = r.item_group_id or ""
-        is_auto = item_id == "-1"
+        is_auto = orig_item_id == "-1"
 
-        existing = await db.execute(select(CreativeView).where(CreativeView.item_id == item_id))
+        # item_id=-1 (自动选品) 在多个 store 都存在，需要用 store_id 区分；其他 item_id 跨 store 唯一
+        storage_key = f"-1_{store_id}" if is_auto and store_id else orig_item_id
+
+        existing = await db.execute(select(CreativeView).where(CreativeView.item_id == storage_key))
         cv = existing.scalar_one_or_none()
         if not cv:
-            cv = CreativeView(item_id=item_id)
+            cv = CreativeView(item_id=storage_key)
             db.add(cv)
 
         cv.is_auto_selected = 1 if is_auto else 0
         cv.item_group_id = igid
         cv.advertiser_id = r.advertiser_id
         cv.campaign_id = r.campaign_id or ""
+        cv.store_id = store_id
         orders = int(r.total_orders or 0)
         daily_info = daily_map.get(item_id)
 

@@ -191,13 +191,18 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
 import { api, advertiserApi } from '../api'
+import { useGlobalFilterStore } from '../stores/globalFilter'
 
+const globalFilterStore = useGlobalFilterStore()
 const advertisers = ref([])
 const campaigns = ref([])
 const loading = ref(false)
 const filter = ref({ advertiser_id: '', days: '30', sort: 'spend' })
+
+// 监听全局店铺筛选器变化
+watch(() => globalFilterStore.shopId, () => load())
 
 // 展开趋势
 const expandedId = ref(null)
@@ -241,6 +246,7 @@ async function load() {
   try {
     const params = { days: filter.value.days, page_size: 100 }
     if (filter.value.advertiser_id) params.advertiser_id = filter.value.advertiser_id
+    if (globalFilterStore.shopId) params.store_id = globalFilterStore.shopId
     const data = await api.get('/campaigns', { params })
     campaigns.value = data.items || data.data?.items || []
     sortCampaigns()

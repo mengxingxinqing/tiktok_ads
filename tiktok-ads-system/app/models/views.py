@@ -60,6 +60,7 @@ class CreativeView(Base, TimestampMixin):
     # 投放指标
     advertiser_id = Column(String(64), index=True)
     campaign_id = Column(String(64))
+    store_id = Column(String(64), index=True)
     total_spend = Column(Float, default=0)
     total_orders = Column(Integer, default=0)
     total_revenue = Column(Float, default=0)

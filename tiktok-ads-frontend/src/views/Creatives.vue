@@ -323,6 +323,7 @@ async function loadCreatives() {
     const params = { sort_by: sortBy.value, sort_order: 'desc' }
     if (dateRange.value.start) params.start_date = dateRange.value.start
     if (dateRange.value.end) params.end_date = dateRange.value.end
+    if (selectedShopId.value) params.store_id = selectedShopId.value
     const res = await api.get('/creatives/gmvmax-creatives', { params })
     creatives.value = Array.isArray(res.items) ? res.items : []
     creativePage.value = 1

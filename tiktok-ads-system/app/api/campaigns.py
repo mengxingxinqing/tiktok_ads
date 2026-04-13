@@ -22,6 +22,7 @@ router = APIRouter(prefix="/campaigns", tags=["Campaigns"])
 async def list_campaigns(
     advertiser_id: Optional[str] = None,
     shop_id: Optional[str] = None,
+    store_id: Optional[str] = None,
     days: int = Query(7, ge=1, le=90),
     page: int = Query(1, ge=1),
     page_size: int = Query(20, ge=1, le=100),
@@ -36,12 +37,9 @@ async def list_campaigns(
     ]
     if advertiser_id:
         conditions.append(MetricsSnapshot.advertiser_id == advertiser_id)
-    _has_shop_id = hasattr(MetricsSnapshot, "shop_id")
-    if shop_id:
-        if _has_shop_id:
-            conditions.append(MetricsSnapshot.shop_id == shop_id)
-        else:
-            conditions.append(MetricsSnapshot.advertiser_id == shop_id)
+    sid = store_id or shop_id
+    if sid:
+        conditions.append(MetricsSnapshot.store_id == sid)
 
     # 聚合查询（含 GMVMax 字段）
     # 注意：object_name 不放进 GROUP BY，改用 MAX() 取最新名称，避免同一 campaign_id 出现多行

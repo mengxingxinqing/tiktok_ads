@@ -187,6 +187,8 @@ async def _fetch_oembed_batch(item_ids: List[str]) -> Dict[str, Dict[str, str]]:
 @router.get("/gmvmax-creatives")
 async def list_gmvmax_creatives(
     advertiser_id: Optional[str] = None,
+    store_id: Optional[str] = Query(None, description="按店铺过滤"),
+    shop_id: Optional[str] = Query(None, description="别名：store_id"),
     item_id: Optional[str] = Query(None, description="按 item_id 过滤"),
     start_date: Optional[str] = Query(None, description="创建日期起始 YYYY-MM-DD"),
     end_date: Optional[str] = Query(None, description="创建日期截止 YYYY-MM-DD"),
@@ -198,9 +200,12 @@ async def list_gmvmax_creatives(
     """GMVMax 创意列表 — 直接从 creative_view 表读取"""
     from app.models.views import CreativeView
 
+    sid = store_id or shop_id
     query = select(CreativeView)
     if advertiser_id:
         query = query.where(CreativeView.advertiser_id == advertiser_id)
+    if sid:
+        query = query.where(CreativeView.store_id == sid)
     if not include_auto:
         query = query.where(CreativeView.is_auto_selected == 0)
     if item_id:
@@ -225,7 +230,8 @@ async def list_gmvmax_creatives(
 
     items = []
     for r in rows:
-        iid = r.item_id or ""
+        # 剥掉自动选品的 store 后缀，返回原始 item_id
+        iid = "-1" if r.is_auto_selected else (r.item_id or "")
         oe = oembed_cache.get(iid, {})
         # 视频 URL：直接用 TikTok 帖子链接（可嵌入播放）
         tiktok_video_url = oe.get("video_url", "") or (f"https://www.tiktok.com/@_/video/{iid}" if iid and iid != "-1" and not r.is_auto_selected else "")
