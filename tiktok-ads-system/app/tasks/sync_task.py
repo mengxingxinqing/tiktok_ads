@@ -199,14 +199,20 @@ async def sync_gmvmax(
         if not store_ids:
             return
 
-        # 2. 拉取 GMVMax 报表（campaign_id 维度）
-        report_data = await client.get_gmvmax_report(
-            store_ids=store_ids,
-            start_date=start_date,
-            end_date=end_date,
-        )
+        # 2. 每个 store 单独拉取 GMVMax 报表（API 限制 store_ids 最多 1 个）
+        rows = []  # [(row_dict, store_id)]
+        for sid in store_ids:
+            try:
+                report_data = await client.get_gmvmax_report(
+                    store_ids=[sid],
+                    start_date=start_date,
+                    end_date=end_date,
+                )
+                for r in (report_data.get("list") or []):
+                    rows.append((r, sid))
+            except Exception as e:
+                logger.warning(f"GMVMax report failed for {advertiser_id} store={sid}: {e}")
 
-        rows = report_data.get("list", [])
         if not rows:
             logger.debug(f"No GMVMax data for {advertiser_id}")
             return
@@ -242,7 +248,7 @@ async def sync_gmvmax(
 
         # 3. 写入 MetricsSnapshot，data_level = "GMVMAX_CAMPAIGN"
         snapshots = []
-        for row in rows:
+        for row, store_id in rows:
             dims = row.get("dimensions", {})
             metrics = row.get("metrics", {})
             campaign_id = dims.get("campaign_id", "")
@@ -258,6 +264,7 @@ async def sync_gmvmax(
                 ).date(),
                 snapshot_time=snapshot_time,
                 campaign_id=campaign_id,
+                store_id=store_id,
 
                 # GMVMax metrics → 复用已有字段 + 新字段
                 spend=float(metrics.get("cost", 0) or 0),             # cost → spend
@@ -486,22 +493,28 @@ async def sync_gmvmax_items(
             logger.debug(f"No GMVMAX_CAMPAIGN records for {advertiser_id}, skip item sync")
             return
 
-        # 3. 拉取 GMVMax 商品组报表
-        report_data = await client.get_gmvmax_item_report(
-            store_ids=store_ids,
-            campaign_ids=campaign_ids,
-            start_date=start_date,
-            end_date=end_date,
-        )
+        # 3. 每个 store 单独拉取 GMVMax 商品组报表
+        all_rows = []  # [(row, store_id)]
+        for sid in store_ids:
+            try:
+                report_data = await client.get_gmvmax_item_report(
+                    store_ids=[sid],
+                    campaign_ids=campaign_ids,
+                    start_date=start_date,
+                    end_date=end_date,
+                )
+                for r in (report_data.get("list") or []):
+                    all_rows.append((r, sid))
+            except Exception as e:
+                logger.warning(f"GMVMax item report failed for {advertiser_id} store={sid}: {e}")
 
-        rows = report_data.get("list", [])
-        if not rows:
+        if not all_rows:
             logger.debug(f"No GMVMax item data for {advertiser_id}")
             return
 
         # 4. 写入 MetricsSnapshot，data_level = "GMVMAX_ITEM"
         snapshots = []
-        for row in rows:
+        for row, store_id in all_rows:
             dims = row.get("dimensions", {})
             metrics = row.get("metrics", {})
             item_group_id = dims.get("item_group_id", "")
@@ -516,6 +529,7 @@ async def sync_gmvmax_items(
                     "%Y-%m-%d",
                 ).date(),
                 snapshot_time=snapshot_time,
+                store_id=store_id,
 
                 # GMVMax item metrics
                 spend=float(metrics.get("cost", 0) or 0),
@@ -604,18 +618,32 @@ async def sync_gmvmax_creatives(
             logger.debug(f"No GMVMAX_ITEM records for {advertiser_id}, skip creative sync")
             return
 
-        # 4. 逐个 item_group_id：
-        #    a) 不带日期维度：拉真实的汇总指标（cost/revenue/orders/roi）→ 写一条 GMVMAX_CREATIVE 记录
-        #    b) 带日期维度：只拉每日 cost → 写 GMVMAX_CREATIVE_DAILY 记录（供生命周期计算）
+        # 3.5. 查 item_group_id → store_id 映射（从刚同步的 GMVMAX_ITEM 记录）
+        ig_store_result = await db.execute(
+            select(MetricsSnapshot.object_id, MetricsSnapshot.store_id)
+            .where(
+                MetricsSnapshot.advertiser_id == advertiser_id,
+                MetricsSnapshot.data_level == "GMVMAX_ITEM",
+                MetricsSnapshot.store_id.isnot(None),
+            )
+            .distinct()
+        )
+        ig_to_store = {row[0]: row[1] for row in ig_store_result.fetchall() if row[0] and row[1]}
+
+        # 4. 逐个 item_group_id：用其对应的 store_id 调用 API
         snapshots = []
         for ig_id in item_group_ids:
+            # 每个 item_group 只属于一个 store，API 限制 store_ids 最多 1 个
+            ig_store_id = ig_to_store.get(ig_id) or (store_ids[0] if store_ids else None)
+            if not ig_store_id:
+                continue
             try:
                 # 4a. 汇总报表（不带 stat_time_day）：真实数据
                 summary_rows = []
                 s_page = 1
                 while True:
                     summary = await client.get_gmvmax_report(
-                        store_ids, start_date, end_date,
+                        [ig_store_id], start_date, end_date,
                         dimensions=["campaign_id", "item_id"],
                         metrics=["cost", "gross_revenue", "orders", "roi", "cost_per_order",
                                  "product_impressions", "product_clicks", "product_click_rate"],
@@ -646,6 +674,7 @@ async def sync_gmvmax_creatives(
                         snapshot_time=snapshot_time,
                         campaign_id=d.get("campaign_id", ""),
                         product_id=ig_id,
+                        store_id=ig_store_id,
                         spend=float(m.get("cost", 0) or 0),
                         gross_revenue=float(m.get("gross_revenue", 0) or 0),
                         conversion=int(m.get("orders", 0) or 0),
@@ -660,7 +689,7 @@ async def sync_gmvmax_creatives(
                 d_page = 1
                 while True:
                     daily = await client.get_gmvmax_report(
-                        store_ids, start_date, end_date,
+                        [ig_store_id], start_date, end_date,
                         dimensions=["item_id", "stat_time_day"],
                         metrics=["cost"],
                         filtering={"campaign_ids": campaign_ids, "item_group_ids": [ig_id]},
@@ -683,6 +712,7 @@ async def sync_gmvmax_creatives(
                             stat_date=datetime.strptime(day, "%Y-%m-%d").date(),
                             snapshot_time=snapshot_time,
                             product_id=ig_id,
+                            store_id=ig_store_id,
                             spend=float(metrics.get("cost", 0) or 0),
                         ))
                     if d_page >= daily.get("page_info", {}).get("total_page", 1):

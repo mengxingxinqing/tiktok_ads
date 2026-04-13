@@ -50,6 +50,8 @@ async def lifespan(app: FastAPI):
         "ALTER TABLE metrics_snapshots ADD COLUMN affiliate_name VARCHAR(256)",
         "ALTER TABLE metrics_snapshots ADD COLUMN commission_amount FLOAT DEFAULT 0.0",
         "ALTER TABLE metrics_snapshots ADD COLUMN commission_rate FLOAT DEFAULT 0.0",
+        "ALTER TABLE metrics_snapshots ADD COLUMN store_id VARCHAR(64)",
+        "CREATE INDEX idx_metrics_store ON metrics_snapshots(store_id)",
     ]
     async with engine.begin() as conn:
         for _sql in _source_columns:

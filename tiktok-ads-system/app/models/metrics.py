@@ -29,6 +29,7 @@ class MetricsSnapshot(Base, TimestampMixin):
     # 商品关联（用于成本管理和商品发现）
     product_id = Column(String(128), index=True, comment="TikTok Shop 商品 ID（如有）")
     sku_id = Column(String(128), comment="SKU ID")
+    store_id = Column(String(64), index=True, comment="店铺 ID（区分同一广告户下多个店铺）")
 
     # 状态
     object_status = Column(String(32), comment="ENABLE / DISABLE / DELETE / REVIEW")
