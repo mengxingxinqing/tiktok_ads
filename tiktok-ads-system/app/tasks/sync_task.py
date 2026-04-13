@@ -788,16 +788,18 @@ async def run_detection_and_decision():
 
 
 async def _sync_stores(advertisers, db):
-    """同步所有广告主关联的店铺信息到 stores 表"""
+    """同步所有广告主关联的店铺信息到 stores 表；API 不再返回的 store 标记为 inactive"""
     from app.models.store import Store
     for adv in advertisers:
         client = TikTokClient(access_token=adv.access_token, advertiser_id=adv.advertiser_id)
         try:
             stores = await client.get_gmvmax_store_list()
+            live_ids = set()
             for s in (stores or []):
                 store_id = str(s.get("store_id") or s.get("shop_id") or "")
                 if not store_id:
                     continue
+                live_ids.add(store_id)
                 # Upsert
                 existing = await db.execute(select(Store).where(Store.store_id == store_id))
                 store = existing.scalar_one_or_none()
@@ -814,6 +816,19 @@ async def _sync_stores(advertisers, db):
                 store.targeting_region_codes = region_codes
                 store.is_active = True
                 store.last_synced_at = datetime.now(timezone.utc)
+
+            # 将该广告主下 API 不再返回的 store 标记为 inactive（权限已撤销）
+            stale_result = await db.execute(
+                select(Store).where(
+                    Store.advertiser_id == adv.advertiser_id,
+                    Store.is_active == True,
+                )
+            )
+            for stale in stale_result.scalars().all():
+                if stale.store_id not in live_ids:
+                    stale.is_active = False
+                    logger.info(f"[Store Sync] Marked inactive: {stale.store_id} ({stale.store_name})")
+
             await db.flush()
             if stores:
                 logger.info(f"[Store Sync] {adv.advertiser_id}: synced {len(stores)} store(s)")
