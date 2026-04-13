@@ -11,6 +11,10 @@
           <option value="">🏪 全部店铺</option>
           <option v-for="s in globalFilterStore.shops" :key="s.id" :value="s.id">{{ s.name }}</option>
         </select>
+        <select v-model="selectedAdvertiserId" @change="loadCreatives" style="width:170px;font-size:12px">
+          <option value="">📢 全部广告户</option>
+          <option v-for="a in advertisers" :key="a.advertiser_id" :value="a.advertiser_id">{{ a.advertiser_name || a.advertiser_id }}</option>
+        </select>
         <input type="date" v-model="dateRange.start" style="width:130px;font-size:12px" @change="loadCreatives" />
         <span style="color:var(--text-muted)">~</span>
         <input type="date" v-model="dateRange.end" style="width:130px;font-size:12px" @change="loadCreatives" />
@@ -96,6 +100,29 @@
 
     <!-- Toast -->
     <div v-if="toast.show" :class="['toast', toast.type]">{{ toast.msg }}</div>
+
+    <!-- 汇总卡片 -->
+    <div v-if="summary && creatives.length" class="card" style="display:flex;gap:24px;padding:14px 20px;margin-bottom:12px;flex-wrap:wrap">
+      <div>
+        <div style="font-size:11px;color:var(--text-muted)">总花费</div>
+        <div style="font-size:18px;font-weight:700">${{ fmt2(summary.total_spend) }}</div>
+        <div style="font-size:11px;color:var(--text-muted);margin-top:2px">昨日 ${{ fmt2(summary.yesterday_spend) }}</div>
+      </div>
+      <div>
+        <div style="font-size:11px;color:var(--text-muted)">总 GMV</div>
+        <div style="font-size:18px;font-weight:700;color:var(--success)">${{ fmt2(summary.total_revenue) }}</div>
+      </div>
+      <div>
+        <div style="font-size:11px;color:var(--text-muted)">总订单</div>
+        <div style="font-size:18px;font-weight:700">{{ summary.total_orders }}</div>
+      </div>
+      <div>
+        <div style="font-size:11px;color:var(--text-muted)">整体 ROI</div>
+        <div style="font-size:18px;font-weight:700" :style="{color: (summary.total_spend>0 ? summary.total_revenue/summary.total_spend : 0) >=1 ? 'var(--success)' : 'var(--danger)'}">
+          {{ summary.total_spend > 0 ? fmt2(summary.total_revenue/summary.total_spend) + 'x' : '-' }}
+        </div>
+      </div>
+    </div>
 
     <!-- 创意列表 -->
     <div class="card">
@@ -199,15 +226,18 @@
 
 <script setup>
 import { ref, computed, onMounted, watch } from 'vue'
-import { api } from '../api'
+import { api, advertiserApi } from '../api'
 import { useGlobalFilterStore } from '../stores/globalFilter'
 
 const globalFilterStore = useGlobalFilterStore()
 
 const selectedShopId = ref('')
+const selectedAdvertiserId = ref('')
 const sortBy = ref('total_spend')
 const dateRange = ref({ start: '', end: '' })
 const creatives = ref([])
+const advertisers = ref([])
+const summary = ref(null)
 const loading = ref(false)
 const creativePage = ref(1)
 const pageSize = 20
@@ -324,8 +354,10 @@ async function loadCreatives() {
     if (dateRange.value.start) params.start_date = dateRange.value.start
     if (dateRange.value.end) params.end_date = dateRange.value.end
     if (selectedShopId.value) params.store_id = selectedShopId.value
+    if (selectedAdvertiserId.value) params.advertiser_id = selectedAdvertiserId.value
     const res = await api.get('/creatives/gmvmax-creatives', { params })
     creatives.value = Array.isArray(res.items) ? res.items : []
+    summary.value = res.summary || null
     creativePage.value = 1
   } catch (e) { console.error('Load creatives failed', e); creatives.value = [] }
   finally { loading.value = false }
@@ -394,7 +426,17 @@ function showToast(msg, type = 'success') {
   toastTimer = setTimeout(() => { toast.value.show = false }, 3000)
 }
 
-onMounted(loadCreatives)
+async function loadAdvertisers() {
+  try {
+    const res = await advertiserApi.list()
+    advertisers.value = Array.isArray(res) ? res : (res.items || res.data || [])
+  } catch (e) { advertisers.value = [] }
+}
+
+onMounted(() => {
+  loadAdvertisers()
+  loadCreatives()
+})
 </script>
 
 <style scoped>

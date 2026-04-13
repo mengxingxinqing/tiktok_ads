@@ -20,6 +20,7 @@ from sqlalchemy import and_, select, func
 
 from app.core.database import get_db
 from app.models.creative import Creative, CreativeSnapshot, LifecycleStage
+from app.models.metrics import MetricsSnapshot
 
 logger = logging.getLogger(__name__)
 
@@ -225,14 +226,36 @@ async def list_gmvmax_creatives(
     result = await db.execute(query)
     rows = result.scalars().all()
 
-    # 批量获取 oEmbed 缩略图（item_id = TikTok 帖子 ID）
-    oembed_cache = await _fetch_oembed_batch([r.item_id for r in rows if r.item_id and not r.is_auto_selected and r.item_id != "-1"])
+    # 批量取昨日花费（从 GMVMAX_CREATIVE_DAILY）
+    from datetime import date, timedelta
+    yesterday = date.today() - timedelta(days=1)
+    yc = {}
+    if rows:
+        orig_ids = ["-1" if r.is_auto_selected else (r.item_id or "") for r in rows]
+        cond = [
+            MetricsSnapshot.data_level == "GMVMAX_CREATIVE_DAILY",
+            MetricsSnapshot.stat_date == yesterday,
+            MetricsSnapshot.object_id.in_(orig_ids),
+        ]
+        if sid:
+            cond.append(MetricsSnapshot.store_id == sid)
+        yres = await db.execute(
+            select(MetricsSnapshot.object_id, MetricsSnapshot.store_id, func.sum(MetricsSnapshot.spend).label("spend"))
+            .where(and_(*cond))
+            .group_by(MetricsSnapshot.object_id, MetricsSnapshot.store_id)
+        )
+        for row in yres.all():
+            yc[(row.object_id, row.store_id or "")] = float(row.spend or 0)
+
+    # 批量获取 oEmbed 缩略图
+    oembed_cache = await _fetch_oembed_batch([("-1" if r.is_auto_selected else r.item_id) for r in rows if r.item_id and not r.is_auto_selected and r.item_id != "-1"])
 
     items = []
     for r in rows:
         # 剥掉自动选品的 store 后缀，返回原始 item_id
         iid = "-1" if r.is_auto_selected else (r.item_id or "")
         oe = oembed_cache.get(iid, {})
+        yspend = yc.get((iid, r.store_id or ""), 0.0)
         # 视频 URL：直接用 TikTok 帖子链接（可嵌入播放）
         tiktok_video_url = oe.get("video_url", "") or (f"https://www.tiktok.com/@_/video/{iid}" if iid and iid != "-1" and not r.is_auto_selected else "")
         items.append({
@@ -261,6 +284,7 @@ async def list_gmvmax_creatives(
             "recommendation": r.recommendation or "",
             "reason": r.reason or "",
             "daily_avg_spend": r.daily_avg_spend or 0,
+            "yesterday_spend": round(yspend, 2),
             "active_days": r.active_days or 0,
             "first_seen": str(r.first_seen) if r.first_seen else None,
             "last_seen": str(r.last_seen) if r.last_seen else None,
@@ -271,6 +295,12 @@ async def list_gmvmax_creatives(
         "sort_by": sort_by,
         "sort_order": sort_order,
         "enriched": True,
+        "summary": {
+            "total_spend": round(sum(i["total_spend"] or 0 for i in items), 2),
+            "yesterday_spend": round(sum(i["yesterday_spend"] or 0 for i in items), 2),
+            "total_revenue": round(sum(i["total_revenue"] or 0 for i in items), 2),
+            "total_orders": sum(i["total_orders"] or 0 for i in items),
+        },
         "items": items,
     }
 

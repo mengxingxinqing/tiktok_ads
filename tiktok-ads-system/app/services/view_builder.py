@@ -199,7 +199,7 @@ async def build_creative_view(db: AsyncSession, days: int = 60):
         cv.campaign_id = r.campaign_id or ""
         cv.store_id = store_id
         orders = int(r.total_orders or 0)
-        daily_info = daily_map.get(item_id)
+        daily_info = daily_map.get(orig_item_id)
 
         cv.total_spend = round(spend, 2)
         cv.total_orders = orders
@@ -221,7 +221,7 @@ async def build_creative_view(db: AsyncSession, days: int = 60):
             cv.product_name = r.obj_name
 
         # 视频信息
-        creative = video_by_product.get(igid) or video_by_product.get(item_id)
+        creative = video_by_product.get(igid) or video_by_product.get(orig_item_id)
         if creative:
             cv.video_id = creative.video_id
             cv.video_url = creative.video_url
@@ -230,7 +230,7 @@ async def build_creative_view(db: AsyncSession, days: int = 60):
             cv.duration = creative.duration
 
         # 生命周期
-        lc = lifecycle_map.get(item_id, {})
+        lc = lifecycle_map.get(orig_item_id, {})
         if is_auto:
             cv.stage = "AUTO"
             cv.recommendation = "observe"
