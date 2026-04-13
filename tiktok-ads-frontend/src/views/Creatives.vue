@@ -203,10 +203,6 @@
               <td>
                 <div style="display:flex;gap:4px">
                   <button class="btn btn-ghost action-btn" title="预览" @click.stop="openPreview(item)">👁️</button>
-                  <button class="btn btn-ghost action-btn" title="排除创意" style="color:var(--danger)"
-                    :disabled="rowLoading[rowKey(item)] || item.is_auto_selected" @click="pauseItem(item)">
-                    {{ rowLoading[rowKey(item)] === 'pause' ? '…' : '🚫' }}
-                  </button>
                   <button class="btn btn-ghost action-btn" title="加热" style="color:var(--warning)"
                     :disabled="rowLoading[rowKey(item)]" @click="openHeatup(item)">📈</button>
                 </div>
