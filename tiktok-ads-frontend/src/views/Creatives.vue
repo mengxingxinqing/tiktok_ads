@@ -13,7 +13,7 @@
         </select>
         <select v-model="selectedAdvertiserId" @change="loadCreatives" style="width:170px;font-size:12px">
           <option value="">📢 全部广告户</option>
-          <option v-for="a in advertisers" :key="a.advertiser_id" :value="a.advertiser_id">{{ a.advertiser_name || a.advertiser_id }}</option>
+          <option v-for="a in advertisers" :key="a.advertiser_id" :value="a.advertiser_id">{{ a.name || a.advertiser_name || a.advertiser_id }}</option>
         </select>
         <input type="date" v-model="dateRange.start" style="width:130px;font-size:12px" @change="loadCreatives" />
         <span style="color:var(--text-muted)">~</span>
@@ -429,7 +429,7 @@ function showToast(msg, type = 'success') {
 async function loadAdvertisers() {
   try {
     const res = await advertiserApi.list()
-    advertisers.value = Array.isArray(res) ? res : (res.items || res.data || [])
+    advertisers.value = Array.isArray(res) ? res : (res.advertisers || res.items || res.data || [])
   } catch (e) { advertisers.value = [] }
 }
 
