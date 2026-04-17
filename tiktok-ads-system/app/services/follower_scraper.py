@@ -5,13 +5,30 @@ TikTok 粉丝数爬虫 — Playwright 方案
 - 支持大规模账号（批次 + 间隔防封）
 - 随机 User-Agent
 - 每批次之间延迟
+
+⚠️ playwright 是**可选依赖**：
+- 本地开发/涨粉监控需要：`pip install playwright && playwright install chromium`
+- 生产线上暂未装 playwright 时，爬粉调用会返回 None 并记录 warning
+- import 语句封在函数内，避免模块加载时就因缺依赖而 crash
 """
-from playwright.sync_api import sync_playwright
 from loguru import logger
 from typing import Optional, List, Dict
 import re
 import time
 import random
+
+
+def _get_sync_playwright():
+    """延迟加载 playwright。未安装时返回 None。"""
+    try:
+        from playwright.sync_api import sync_playwright
+        return sync_playwright
+    except ImportError:
+        logger.warning(
+            "[Scraper] playwright not installed. Install with: "
+            "`pip install playwright && playwright install chromium`"
+        )
+        return None
 
 
 class TikTokFollowerScraper:
@@ -45,10 +62,14 @@ class TikTokFollowerScraper:
 
     def get_follower_count(self, username: str) -> Optional[int]:
         """
-        获取单个账号粉丝数
+        获取单个账号粉丝数。playwright 未安装时返回 None。
         """
         username = username.lstrip("@")
         url = f"https://www.tiktok.com/@{username}"
+
+        sync_playwright = _get_sync_playwright()
+        if sync_playwright is None:
+            return None
 
         with sync_playwright() as p:
             try:
