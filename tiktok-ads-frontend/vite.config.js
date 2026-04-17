@@ -29,10 +29,12 @@ export default defineConfig({
           }
 
           // 其他请求（API）→ proxy 到后端
+          // 与生产 nginx 行为一致：/api/ 前缀 rewrite 剥掉，后端 router 都是无 /api 的
+          const strippedPath = url.startsWith('/api/') ? url.slice(4) : url
           const proxyReq = http.request({
             hostname: backendUrl.hostname,
             port: backendUrl.port,
-            path: url,
+            path: strippedPath,
             method: req.method,
             headers: { ...req.headers, host: backendUrl.host },
           }, (proxyRes) => {

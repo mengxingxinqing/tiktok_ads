@@ -38,7 +38,7 @@ from app.services.growth_campaign_creator import GrowthCampaignCreator
 from app.services import currency as fx
 from app.core.config import settings
 
-router = APIRouter(prefix="/api/growth", tags=["智能涨粉"])
+router = APIRouter(prefix="/growth", tags=["智能涨粉"])
 
 
 # =========================== 独立 OAuth 授权（不写 advertisers 表） ===========================
