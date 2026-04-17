@@ -92,8 +92,39 @@ async def oauth_callback(
     if not token_code:
         logger.error("OAuth callback: missing both auth_code and code parameters")
         raise HTTPException(status_code=400, detail="Missing auth_code or code parameter")
-    
+
     logger.info(f"OAuth callback: state={state}, auth_code={token_code[:8]}...")
+
+    # === State 前缀分流：涨粉模块专属授权，不写 advertisers 表 ===
+    if state and state.startswith("growth_"):
+        try:
+            from app.api.growth import handle_growth_oauth_callback
+            result = await handle_growth_oauth_callback(db=db, token_code=token_code, state=state)
+            base = settings.TIKTOK_REDIRECT_URI.rsplit("/auth/callback", 1)[0]
+            return RedirectResponse(
+                url=f"{base}/growth?authorized={result.get('owner_advertiser_id', '')}"
+                    f"&created={result.get('created', 0)}&updated={result.get('updated', 0)}",
+                status_code=302,
+            )
+        except TikTokAPIError as e:
+            base = settings.TIKTOK_REDIRECT_URI.rsplit("/auth/callback", 1)[0]
+            return RedirectResponse(
+                url=f"{base}/auth/error?message={quote(f'TikTok {e.code}: {e.message}')}",
+                status_code=302,
+            )
+        except HTTPException as e:
+            base = settings.TIKTOK_REDIRECT_URI.rsplit("/auth/callback", 1)[0]
+            return RedirectResponse(
+                url=f"{base}/auth/error?message={quote(str(e.detail))}",
+                status_code=302,
+            )
+        except Exception as e:
+            logger.exception(f"[GrowthOAuth] callback failed: {e}")
+            base = settings.TIKTOK_REDIRECT_URI.rsplit("/auth/callback", 1)[0]
+            return RedirectResponse(
+                url=f"{base}/auth/error?message={quote(f'{type(e).__name__}: {e}')}",
+                status_code=302,
+            )
 
     try:
         # 1. 换取 token

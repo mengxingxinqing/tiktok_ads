@@ -123,10 +123,28 @@ const routes = [
     meta: { title: '快捷操作' },
   },
   {
-    path: '/settings',
-    name: 'Settings',
-    component: () => import('../views/Settings.vue'),
-    meta: { title: '系统设置' },
+    path: '/growth',
+    name: 'GrowthDashboard',
+    component: () => import('../views/GrowthDashboard.vue'),
+    meta: { title: '智能涨粉' },
+  },
+  {
+    path: '/growth/tk-accounts',
+    name: 'GrowthTkAccounts',
+    component: () => import('../views/GrowthTkAccounts.vue'),
+    meta: { title: 'TK账号管理' },
+  },
+  {
+    path: '/growth/creatives',
+    name: 'GrowthCreatives',
+    component: () => import('../views/GrowthCreatives.vue'),
+    meta: { title: '素材库' },
+  },
+  {
+    path: '/growth/campaigns',
+    name: 'GrowthCampaigns',
+    component: () => import('../views/GrowthCampaigns.vue'),
+    meta: { title: '涨粉Campaign' },
   },
   {
     path: '/auth/success',

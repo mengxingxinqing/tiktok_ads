@@ -400,6 +400,19 @@ server {{
     root {REMOTE_DIR}/frontend;
     index index.html;
 
+    # /api/* 走后端（前端 axios baseURL = /api，所有 API 调用都在这里）
+    location /api/ {{
+        proxy_pass http://127.0.0.1:{BACKEND_PORT};
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_read_timeout 300s;
+        proxy_send_timeout 300s;
+        client_max_body_size 500M;
+    }}
+
+    # 旧接口（无 /api 前缀）兼容保留，包括 /auth/callback 等 OAuth 回调
     location ~ ^/(auth|dashboard|campaigns|creatives|products|orders|ads|shop-summary|gmvmax|health|alerts|decisions|settings|rules|boost|analytics|shops|creative-groups|creative-dashboard|comments|channel) {{
         proxy_pass http://127.0.0.1:{BACKEND_PORT};
         proxy_set_header Host $host;
@@ -434,6 +447,19 @@ server {{
     root {REMOTE_DIR}/frontend;
     index index.html;
 
+    # /api/* 走后端（前端 axios baseURL = /api，所有 API 调用都在这里）
+    location /api/ {{
+        proxy_pass http://127.0.0.1:{BACKEND_PORT};
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_read_timeout 300s;
+        proxy_send_timeout 300s;
+        client_max_body_size 500M;
+    }}
+
+    # 旧接口（无 /api 前缀）兼容保留，包括 /auth/callback 等 OAuth 回调
     location ~ ^/(auth|dashboard|campaigns|creatives|products|orders|ads|shop-summary|gmvmax|health|alerts|decisions|settings|rules|boost|analytics|shops|creative-groups|creative-dashboard|comments|channel) {{
         proxy_pass http://127.0.0.1:{BACKEND_PORT};
         proxy_set_header Host $host;

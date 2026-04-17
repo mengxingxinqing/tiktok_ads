@@ -33,6 +33,7 @@ from app.api import channel_analysis
 from app.api import creative_groups
 from app.api import comments
 from app.api import creative_dashboard
+from app.api import growth
 
 
 @asynccontextmanager
@@ -90,6 +91,59 @@ async def lifespan(app: FastAPI):
             except Exception as _e:
                 logger.debug(f"Migration skip: {_e}")
     logger.info("Product costs nullable migration done")
+
+    # 数据库迁移：智能涨粉模块扩展字段（幂等，列已存在则跳过）
+    _growth_migrations = [
+        # growth_campaigns
+        "ALTER TABLE growth_campaigns ADD COLUMN tiktok_ad_id VARCHAR(64) NULL",
+        "ALTER TABLE growth_campaigns ADD COLUMN identity_id VARCHAR(128) NULL",
+        "ALTER TABLE growth_campaigns ADD COLUMN identity_type VARCHAR(32) NULL",
+        "ALTER TABLE growth_campaigns ADD COLUMN post_id VARCHAR(128) NULL",
+        "ALTER TABLE growth_campaigns ADD COLUMN baseline_followers BIGINT NULL",
+        "ALTER TABLE growth_campaigns ADD COLUMN budget_local DECIMAL(14,4) NULL",
+        "ALTER TABLE growth_campaigns ADD COLUMN budget_currency VARCHAR(8) NULL",
+        "ALTER TABLE growth_campaigns ADD COLUMN total_spend_local DECIMAL(14,4) DEFAULT 0",
+        "ALTER TABLE growth_campaigns ADD COLUMN last_spend_synced_at DATETIME NULL",
+        "ALTER TABLE growth_campaigns ADD COLUMN scrape_failure_count INT DEFAULT 0",
+        "ALTER TABLE growth_campaigns ADD COLUMN last_check_at DATETIME NULL",
+        "ALTER TABLE growth_campaigns ADD COLUMN last_check_followers INT NULL",
+        "ALTER TABLE growth_campaigns ADD COLUMN next_check_at DATETIME NULL",
+        "CREATE INDEX idx_gc_next_check ON growth_campaigns(next_check_at)",
+        "ALTER TABLE growth_campaigns ADD COLUMN official_spend_local DECIMAL(14,4) NULL",
+        "ALTER TABLE growth_campaigns ADD COLUMN official_spend_usd DECIMAL(14,4) NULL",
+        "ALTER TABLE growth_campaigns ADD COLUMN official_followers_gained INT NULL",
+        "ALTER TABLE growth_campaigns ADD COLUMN last_reconciled_at DATETIME NULL",
+        # tk_accounts
+        "ALTER TABLE tk_accounts ADD COLUMN identity_id VARCHAR(128) NULL",
+        "ALTER TABLE tk_accounts ADD COLUMN identity_advertiser_id VARCHAR(64) NULL",
+        "ALTER TABLE tk_accounts ADD COLUMN tap_authorized_at DATETIME NULL",
+        "ALTER TABLE tk_accounts ADD COLUMN tap_expires_at DATETIME NULL",
+        # ad_accounts
+        "ALTER TABLE ad_accounts ADD COLUMN token_owner_advertiser_id VARCHAR(64) NULL",
+        "ALTER TABLE ad_accounts ADD COLUMN balance_usd DECIMAL(14,4) NULL",
+        "ALTER TABLE ad_accounts ADD COLUMN reserved_budget_usd DECIMAL(14,4) DEFAULT 0",
+        # creative_materials
+        "ALTER TABLE creative_materials ADD COLUMN auth_code VARCHAR(256) NULL",
+        "ALTER TABLE creative_materials ADD COLUMN item_id VARCHAR(128) NULL",
+        "ALTER TABLE creative_materials ADD COLUMN identity_id VARCHAR(128) NULL",
+        "ALTER TABLE creative_materials ADD COLUMN identity_type VARCHAR(32) NULL",
+        "ALTER TABLE creative_materials ADD COLUMN ad_auth_status VARCHAR(32) NULL",
+        "ALTER TABLE creative_materials ADD COLUMN auth_end_time DATETIME NULL",
+        "ALTER TABLE creative_materials ADD COLUMN bound_tk_account_id VARCHAR(64) NULL",
+        "CREATE INDEX idx_cm_advertiser ON creative_materials(advertiser_id)",
+        "CREATE INDEX idx_cm_item ON creative_materials(item_id)",
+        # creative_materials.video_id 唯一约束要放宽：同一视频在不同广告户各占一行
+        "ALTER TABLE creative_materials DROP INDEX video_id",
+    ]
+    async with engine.begin() as conn:
+        for _sql in _growth_migrations:
+            try:
+                await conn.execute(_text(_sql))
+                logger.info(f"Migration: {_sql[:80]}...")
+            except Exception as _e:
+                # MySQL 1060 = Duplicate column；1061 = Duplicate key；1091 = 未知列（索引回退）
+                logger.debug(f"Migration skip: {_e}")
+    logger.info("Growth module migration done")
 
     # 初始化默认规则（表为空时自动写入）
     from app.models.rule import AlertRule, DEFAULT_RULES
@@ -150,6 +204,7 @@ app.include_router(channel_analysis.router) # 新增：渠道来源分析
 app.include_router(creative_groups.router) # 新增：素材分组管理
 app.include_router(comments.router)           # 新增：评论监控（数据入库）
 app.include_router(creative_dashboard.router) # 新增：创意大盘
+app.include_router(growth.router)              # 新增：智能涨粉
 
 
 @app.get("/health")

@@ -326,6 +326,18 @@ class TikTokClient:
         body = {"advertiser_id": self.advertiser_id, "adgroup_id": adgroup_id, "ad_name": ad_name, **extra}
         return await self._call_sdk(self._ad_api.ad_create, body=body)
 
+    async def create_ad_spark(self, adgroup_id: str, creatives: List[Dict]) -> Dict:
+        """Spark Ads 风格的 /ad/create/：只接 creatives 数组。"""
+        return await self._request(
+            "POST",
+            "/open_api/v1.3/ad/create/",
+            json_body={
+                "advertiser_id": self.advertiser_id,
+                "adgroup_id": adgroup_id,
+                "creatives": creatives,
+            },
+        )
+
     async def update_ad_status(self, ad_ids: List[str], operation_status: str) -> Dict:
         return await self._call_sdk(self._ad_api.ad_status_update, body={
             "advertiser_id": self.advertiser_id, "ad_ids": ad_ids, "operation_status": operation_status,
@@ -361,6 +373,38 @@ class TikTokClient:
         mets = ["order_id", "order_amount", "order_status", "payment_status", "product_id", "product_name", "quantity", "unit_price",
                 "shop_id", "shop_name", "order_source", "affiliate_id", "affiliate_name", "commission_rate", "commission_amount"]
         return await self.get_report("ORDER", start_date, end_date, dimensions=dims, metrics=mets, **kw)
+
+    # ===================== Spark Ads / TT Video Authorize =====================
+
+    async def tt_video_authorize(self, auth_code: str) -> Dict:
+        """
+        绑定创作者授权的 TikTok 帖子到本广告户。
+        POST /open_api/v1.3/tt_video/authorize/
+        """
+        return await self._request(
+            "POST",
+            "/open_api/v1.3/tt_video/authorize/",
+            json_body={"advertiser_id": self.advertiser_id, "auth_code": auth_code},
+        )
+
+    async def tt_video_list(self, page: int = 1, page_size: int = 20) -> Dict:
+        """
+        查询已授权到本广告户的帖子，返回 identity_id + item_id。
+        GET /open_api/v1.3/tt_video/list/
+        """
+        return await self._request(
+            "GET",
+            "/open_api/v1.3/tt_video/list/",
+            params={"advertiser_id": self.advertiser_id, "page": page, "page_size": page_size},
+        )
+
+    async def tt_video_info(self, auth_code: str) -> Dict:
+        """按 auth_code 查单条已授权帖子。"""
+        return await self._request(
+            "GET",
+            "/open_api/v1.3/tt_video/info/",
+            params={"advertiser_id": self.advertiser_id, "auth_code": auth_code},
+        )
 
     # ===================== File / Video =====================
 

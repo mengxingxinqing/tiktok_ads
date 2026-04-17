@@ -34,7 +34,11 @@ app.conf.update(
     enable_utc=True,
 
     # 任务发现
-    imports=["app.tasks.celery_tasks"],
+    imports=[
+        "app.tasks.celery_tasks",
+        "app.tasks.growth_monitor",
+        "app.tasks.growth_daily_reconcile",
+    ],
 
     # 任务执行
     task_acks_late=True,                  # 任务执行完才 ack，失败可重试
@@ -72,6 +76,16 @@ app.conf.update(
         "comment-sync": {
             "task": "app.tasks.celery_tasks.comment_sync",
             "schedule": crontab(minute=30, hour="*/4"),  # 每 4 小时的第 30 分钟
+        },
+        # 涨粉监控（每 15 分钟）
+        "growth-monitor": {
+            "task": "app.tasks.growth_monitor.celery_check_campaigns",
+            "schedule": crontab(minute="*/15"),  # 每 15 分钟
+        },
+        # 涨粉每日对账（UTC 13:00，避开 TikTok UTC 12:00 数据修正窗口）
+        "growth-reconcile-daily": {
+            "task": "app.tasks.growth_daily_reconcile.celery_reconcile",
+            "schedule": crontab(hour=13, minute=0),
         },
     },
 )

@@ -89,6 +89,20 @@ const navGroups = [
       { path: '/creatives',         icon: '🎬', label: '创意列表' },
       { path: '/creative-manager',  icon: '📤', label: '视频管理' },
       { path: '/creative-dashboard', icon: '📊', label: '状态分布概览' },
+    ]
+  },
+  {
+    label: '🚀 智能涨粉',
+    items: [
+      { path: '/growth',            icon: '📈', label: '涨粉大盘' },
+      { path: '/growth/tk-accounts', icon: '🎯', label: 'TK账号' },
+      { path: '/growth/creatives',  icon: '🎬', label: '素材库' },
+      { path: '/growth/campaigns', icon: '🚀', label: '创建Campaign' },
+    ]
+  },
+  {
+    label: '',
+    items: [
       { path: '/settings',          icon: '⚙️', label: '系统设置' },
     ]
   },
