@@ -80,9 +80,43 @@ class Deployer:
 
     def connect(self):
         log(f"Connecting to {SERVER_HOST}...")
-        self.ssh.connect(SERVER_HOST, username=SERVER_USER, password=SERVER_PASS, timeout=10)
+        # SSH banner 常被阿里云限流重置，最多重试 5 次
+        last_err = None
+        for attempt in range(5):
+            try:
+                self.ssh = paramiko.SSHClient()
+                self.ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+                self.ssh.connect(
+                    SERVER_HOST, username=SERVER_USER, password=SERVER_PASS,
+                    timeout=30, banner_timeout=60, auth_timeout=30,
+                )
+                # 启用 SSH 层 keepalive：防 SFTP 长传中途被防火墙 RST
+                self.ssh.get_transport().set_keepalive(30)
+                self.sftp = self.ssh.open_sftp()
+                log(f"Connected! (attempt {attempt + 1})")
+                return
+            except Exception as e:
+                last_err = e
+                log(f"  attempt {attempt + 1} failed: {e}")
+                time.sleep(3 + attempt * 2)
+        err(f"SSH connect failed after 5 attempts: {last_err}")
+
+    def _reopen_sftp(self):
+        """SFTP 会话断了就重开一条。"""
+        try:
+            self.sftp.close()
+        except Exception:
+            pass
+        # 如果底层 transport 也挂了，重开整条 SSH
+        try:
+            if not self.ssh.get_transport() or not self.ssh.get_transport().is_active():
+                log("  SSH transport dead, reconnecting...")
+                self.connect()
+                return
+        except Exception:
+            self.connect()
+            return
         self.sftp = self.ssh.open_sftp()
-        log("Connected!")
 
     def run(self, cmd, check=True, timeout=300):
         """执行远程命令"""
@@ -113,13 +147,21 @@ class Deployer:
             if item.is_dir():
                 self._mkdir_p(remote_file)
             elif item.is_file():
-                try:
-                    self.sftp.put(str(item), remote_file)
-                    file_count += 1
-                    if file_count % 50 == 0:
-                        print(f"  Uploaded {file_count} files...", flush=True)
-                except Exception as e:
-                    print(f"  Warning: Failed to upload {rel}: {e}")
+                # SFTP 断连自动重开最多重试 3 次
+                for attempt in range(3):
+                    try:
+                        self.sftp.put(str(item), remote_file)
+                        file_count += 1
+                        if file_count % 50 == 0:
+                            print(f"  Uploaded {file_count} files...", flush=True)
+                        break
+                    except (EOFError, OSError, paramiko.SSHException) as e:
+                        if attempt == 2:
+                            print(f"  Failed after 3 retries: {rel}: {e}")
+                            break
+                        print(f"  SFTP reset on {rel}, reopening (try {attempt + 2}/3)")
+                        time.sleep(2)
+                        self._reopen_sftp()
         return file_count
 
     def _mkdir_p(self, remote_path):
@@ -368,9 +410,9 @@ DEBUG=false
 LOG_LEVEL=INFO
 SYNC_INTERVAL_MINUTES=30
 """
-    with d.sftp.open(f"{REMOTE_DIR}/backend/.env", 'w') as f:
+    with d.sftp.open(f"{REMOTE_DIR}/tiktok-ads-system/.env", 'w') as f:
         f.write(env_content)
-    log(".env created!")
+    log(".env created at tiktok-ads-system/.env")
 
 
 def setup_nginx(d: Deployer):
